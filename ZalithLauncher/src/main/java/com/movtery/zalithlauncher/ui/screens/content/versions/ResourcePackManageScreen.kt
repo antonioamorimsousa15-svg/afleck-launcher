@@ -2,6 +2,7 @@ package com.movtery.zalithlauncher.ui.screens.content.versions
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,6 +63,7 @@ import coil3.gif.GifDecoder
 import coil3.request.ImageRequest
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.version.installed.Version
+import com.movtery.zalithlauncher.game.version.installed.VersionFolders
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.ContentCheckBox
 import com.movtery.zalithlauncher.ui.components.ProgressDialog
@@ -73,11 +75,11 @@ import com.movtery.zalithlauncher.ui.components.itemLayoutColor
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.FileNameInputDialog
+import com.movtery.zalithlauncher.ui.screens.content.versions.elements.LoadingState
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.MinecraftColorTextNormal
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.ResourcePackFilter
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.ResourcePackInfo
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.ResourcePackOperation
-import com.movtery.zalithlauncher.ui.screens.content.versions.elements.ResourcePackState
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.filterPacks
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.parseResourcePack
 import com.movtery.zalithlauncher.ui.screens.content.versions.layouts.VersionSettingsBackground
@@ -104,7 +106,7 @@ fun ResourcePackManageScreen(
         ),
         Triple(NormalNavKey.Versions.ResourcePackManager, versionsScreenKey, false)
     ) { isVisible ->
-        val resourcePackDir = File(version.getGameDir(), "resourcepacks")
+        val resourcePackDir = File(version.getGameDir(), VersionFolders.RESOURCE_PACK.folderName)
 
         //触发刷新
         var refreshTrigger by remember { mutableStateOf(false) }
@@ -118,7 +120,7 @@ fun ResourcePackManageScreen(
             }
         }
 
-        var packState by remember { mutableStateOf<ResourcePackState>(ResourcePackState.None) }
+        var packState by remember { mutableStateOf<LoadingState>(LoadingState.None) }
 
         val yOffset by swapAnimateDpAsState(
             targetValue = (-40).dp,
@@ -135,7 +137,7 @@ fun ResourcePackManageScreen(
             val operationScope = rememberCoroutineScope()
 
             when (packState) {
-                is ResourcePackState.None -> {
+                is LoadingState.None -> {
                     val itemColor = itemLayoutColor()
                     val itemContentColor = MaterialTheme.colorScheme.onSurface
 
@@ -193,7 +195,7 @@ fun ResourcePackManageScreen(
                         )
                     }
                 }
-                is ResourcePackState.Loading -> {
+                is LoadingState.Loading -> {
                     Box(Modifier.fillMaxSize()) {
                         CircularProgressIndicator(Modifier.align(Alignment.Center))
                     }
@@ -202,7 +204,7 @@ fun ResourcePackManageScreen(
         }
 
         LaunchedEffect(refreshTrigger) {
-            packState = ResourcePackState.Loading
+            packState = LoadingState.Loading
 
             withContext(Dispatchers.IO) {
                 val tempList = mutableListOf<ResourcePackInfo>()
@@ -219,7 +221,7 @@ fun ResourcePackManageScreen(
                 allPacks = tempList.sortedBy { it.rawName }
             }
 
-            packState = ResourcePackState.None
+            packState = LoadingState.None
         }
     }
 }
@@ -280,9 +282,7 @@ private fun ResourcePackHeader(
         }
 
         HorizontalDivider(
-            modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.onSurface
         )
     }
@@ -367,8 +367,10 @@ private fun ResourcePackItemLayout(
                 verticalArrangement = Arrangement.Center
             ) {
                 MinecraftColorTextNormal(
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                     inputText = resourcePackInfo.displayName,
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1
                 )
                 resourcePackInfo.description?.let { description ->
                     MinecraftColorTextNormal(
