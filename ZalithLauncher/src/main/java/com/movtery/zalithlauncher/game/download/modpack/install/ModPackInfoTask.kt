@@ -40,8 +40,10 @@ import java.io.File
 
 /**
  * 基于 [ModPackInfo] 类实现的整合包导入的任务流创建接口
+ * @param root 整合包根目录
  */
 abstract class ModPackInfoTask(
+    protected val root: File,
     platform: PackPlatform
 ) : AbstractPack(platform = platform) {
     /**
@@ -65,13 +67,12 @@ abstract class ModPackInfoTask(
     protected abstract suspend fun readInfo(
         task: Task,
         versionFolder: File,
-        packFolder: File
+        root: File
     ): ModPackInfo
 
     override fun buildTaskPhases(
         context: Context,
         scope: CoroutineScope,
-        packFolder: File,
         versionFolder: File,
         waitForVersionName: suspend (name: String) -> String,
         addPhases: (List<TaskFlowExecutor.TaskPhase>) -> Unit,
@@ -85,7 +86,7 @@ abstract class ModPackInfoTask(
                     title = context.getString(R.string.import_modpack_task_extract_files_and_schedule_download),
                     icon = Icons.Outlined.Build
                 ) { task ->
-                    modpackInfo = readInfo(task, versionFolder, packFolder)
+                    modpackInfo = readInfo(task, versionFolder, root)
                 }
 
                 //等待用户输入预安装版本名称
@@ -158,7 +159,7 @@ abstract class ModPackInfoTask(
         tempVersionsDir: File,
         onClearTemp: suspend () -> Unit
     ) = Task.runTask(
-        id = "ModPack.Final.Install",
+        id = "ImportModpack.FinalInstall",
         dispatcher = Dispatchers.IO,
         task = { task ->
             task.updateProgress(-1f)

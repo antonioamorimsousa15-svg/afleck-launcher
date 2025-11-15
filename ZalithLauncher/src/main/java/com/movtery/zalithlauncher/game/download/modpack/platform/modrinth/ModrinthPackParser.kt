@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.game.download.modpack.platform.modrinth
 
+import com.movtery.zalithlauncher.game.download.modpack.platform.PackPlatform
 import com.movtery.zalithlauncher.game.download.modpack.platform.SimplePackParser
 
 /**
@@ -26,7 +27,9 @@ import com.movtery.zalithlauncher.game.download.modpack.platform.SimplePackParse
 object ModrinthPackParser : SimplePackParser<ModrinthManifest>(
     indexFilePath = "modrinth.index.json",
     manifestClass = ModrinthManifest::class.java,
-    buildPack = { manifest ->
-        ModrinthPack(manifest = manifest)
+    buildPack = { root, manifest ->
+        ModrinthPack(root = root, manifest = manifest)
     }
-)
+) {
+    override fun getIdentifier(): String = PackPlatform.Modrinth.identifier
+}
