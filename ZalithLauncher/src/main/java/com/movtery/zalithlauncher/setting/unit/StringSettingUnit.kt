@@ -26,7 +26,8 @@ class StringSettingUnit(key: String, defaultValue: String) : AbstractSettingUnit
             .also { state = it }
     }
 
-    override fun saveValue(v: String) {
+    override fun saveValue(v: String): String {
         launcherMMKV().putString(key, v).apply()
+        return v
     }
 }
