@@ -63,7 +63,7 @@ class ModrinthPackExporter: AbstractExporter(
         info: ExportInfo,
         tempPath: File
     ) {
-        if (info.packRemote) {
+        if (info.packModrinth) {
             addTask(
                 id = "ModrinthPackExporter.FetchRemote",
                 title = context.getString(R.string.versions_export_task_fetch_remote),
