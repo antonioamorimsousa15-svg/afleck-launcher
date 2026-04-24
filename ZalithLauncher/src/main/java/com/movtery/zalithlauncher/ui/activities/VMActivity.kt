@@ -40,8 +40,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -82,7 +85,6 @@ import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
-import com.movtery.zalithlauncher.ui.base.WindowMode
 import com.movtery.zalithlauncher.ui.components.rememberBoxSize
 import com.movtery.zalithlauncher.ui.control.input.HidableInputLayout
 import com.movtery.zalithlauncher.ui.control.input.TextInputMode
@@ -650,14 +652,6 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         withHandler { mIsSurfaceDestroyed = true }
     }
 
-    override fun getWindowMode(): WindowMode {
-        return if (AllSettings.gameFullScreen.getValue()) {
-            WindowMode.FULL_IMMERSIVE
-        } else {
-            WindowMode.DEFAULT
-        }
-    }
-
     @Composable
     private fun Screen(
         content: @Composable () -> Unit = {}
@@ -669,6 +663,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
+                .run {
+                    if (AllSettings.gameFullScreen.state) this
+                    else padding(WindowInsets.displayCutout.asPaddingValues())
+                }
         ) {
             val screenSize = rememberBoxSize()
 

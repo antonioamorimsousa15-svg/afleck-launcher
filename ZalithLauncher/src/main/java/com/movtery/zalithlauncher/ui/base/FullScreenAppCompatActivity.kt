@@ -25,33 +25,12 @@ import android.view.WindowManager
 import androidx.annotation.CallSuper
 import androidx.annotation.RequiresApi
 
-enum class WindowMode {
-    DEFAULT,
-    FULL_IMMERSIVE
-}
-
 abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyFullscreen(getWindowMode())
         super.onCreate(savedInstanceState)
+        applyFullImmersive()
     }
-
-    @CallSuper
-    override fun onPostResume() {
-        super.onPostResume()
-        applyFullscreen(getWindowMode())
-    }
-
-    @CallSuper
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            applyFullscreen(getWindowMode())
-        }
-    }
-
-    abstract fun getWindowMode(): WindowMode
 
     @Suppress("DEPRECATION")
     private val systemUIVisibility = (
@@ -62,43 +41,6 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_FULLSCREEN
                     or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             )
-
-    @Suppress("DEPRECATION")
-    private fun applyFullscreen(mode: WindowMode) {
-        if (window != null) {
-            when (mode) {
-                WindowMode.DEFAULT -> {
-                    applyDefault()
-                }
-                WindowMode.FULL_IMMERSIVE -> {
-                    if (isInMultiWindowMode) {
-                        applyDefault()
-                    } else {
-                        applyFullImmersive()
-                    }
-                }
-            }
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun applyDefault() {
-        if (window != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                applyWindowAttributes(WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER)
-            }
-
-            window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
-            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN) //隐藏状态栏
-            window.decorView.systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    )
-        }
-    }
 
     @Suppress("DEPRECATION")
     private fun applyFullImmersive() {
@@ -120,9 +62,5 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
             params.layoutInDisplayCutoutMode = newParams
             window.attributes = params
         }
-    }
-
-    protected fun refreshWindow() {
-        applyFullscreen(getWindowMode())
     }
 }
