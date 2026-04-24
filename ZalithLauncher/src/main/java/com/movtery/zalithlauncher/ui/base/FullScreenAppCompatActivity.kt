@@ -23,7 +23,13 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.annotation.CallSuper
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
 abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
     @CallSuper
@@ -46,7 +52,12 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
     private fun applyFullImmersive() {
         if (window != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                applyWindowAttributes(WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES)
+                val params = window.attributes
+                val newParams = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                if (params.layoutInDisplayCutoutMode != newParams) {
+                    params.layoutInDisplayCutoutMode = newParams
+                    window.attributes = params
+                }
             }
 
             window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
@@ -54,13 +65,13 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
             window.decorView.systemUiVisibility = systemUIVisibility
         }
     }
+}
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun applyWindowAttributes(newParams: Int) {
-        val params = window.attributes
-        if (params.layoutInDisplayCutoutMode != newParams) {
-            params.layoutInDisplayCutoutMode = newParams
-            window.attributes = params
-        }
-    }
+@Composable
+fun Modifier.applyFullscreen(value: Boolean): Modifier {
+    val modifier = Modifier.fillMaxSize()
+    return then(
+        if (value) modifier
+        else modifier.padding(WindowInsets.displayCutout.asPaddingValues())
+    )
 }

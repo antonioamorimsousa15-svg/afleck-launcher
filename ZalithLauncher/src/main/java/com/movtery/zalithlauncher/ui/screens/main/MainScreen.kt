@@ -35,9 +35,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -89,6 +86,7 @@ import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.ui.base.applyFullscreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.components.TextRailItem
@@ -174,11 +172,7 @@ fun MainScreen(
     ) {
         Column(
             modifier = Modifier
-                .run {
-                    if (AllSettings.launcherFullScreen.state) this
-                    else padding(WindowInsets.displayCutout.asPaddingValues())
-                }
-                .fillMaxSize()
+                .applyFullscreen(AllSettings.launcherFullScreen.state)
         ) {
             TopBar(
                 modifier = Modifier
