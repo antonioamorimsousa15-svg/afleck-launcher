@@ -24,10 +24,8 @@ import android.view.View
 import android.view.WindowManager
 import androidx.annotation.CallSuper
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -64,10 +62,7 @@ abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
 fun Modifier.applyFullscreen(value: Boolean): Modifier {
     val modifier = Modifier.fillMaxSize()
     return then(
-        modifier.windowInsetsPadding(
-            WindowInsets.captionBar.run {
-                if (value) this else union(WindowInsets.displayCutout)
-            }
-        )
+        if (value) modifier
+        else modifier.windowInsetsPadding(WindowInsets.displayCutout)
     )
 }
