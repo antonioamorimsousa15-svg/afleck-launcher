@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -65,7 +66,9 @@ import com.movtery.zalithlauncher.terracotta.profile.TerracottaProfile
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.theme.cardColor
+import com.movtery.zalithlauncher.ui.theme.itemColor
 import com.movtery.zalithlauncher.ui.theme.onCardColor
+import com.movtery.zalithlauncher.ui.theme.onItemColor
 
 sealed interface TerracottaLogOperation {
     /** 正常情况下，不展示日志内容，显示对话框 UI */
@@ -677,7 +680,12 @@ private fun SimpleCardButton(
         modifier = modifier,
         influencedByBackground = false,
         onClick = onClick,
-        enabled = enabled
+        enabled = enabled,
+        colors = CardDefaults.cardColors(
+            containerColor = itemColor(false),
+            contentColor = onItemColor(),
+            disabledContainerColor = itemColor(false)
+        )
     ) {
         Row(
             modifier = Modifier
