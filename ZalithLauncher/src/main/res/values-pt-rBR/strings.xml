@@ -818,7 +818,7 @@
     <string name="settings_control_mouse_pointer_not_allowed_title">Setinha do Mouse Virtual (Sem Permissão)</string>
     <string name="settings_control_mouse_pointer_not_allowed_summary">Apenas MC 1.21.9+ suporta a troca da Setinha do mouse para opções nas quais estão bloqueadas ou sem suporte a interações</string>
     <string name="settings_control_mouse_pointer_common_summary">Apenas MC 1.21.9+ suporta este tipo de setinha</string>
-    <string name="settings_control_mouse_pointer_reset_message">Redefinir a Setinha do Mouse para a padrão? :(..</string>
+    <string name="settings_control_mouse_pointer_reset_message">Você quer mesmo redefinir a setinha do mouse para a padrão? 🥹</string>
     <string name="settings_control_mouse_pointer_hotspot">Definir Hotspot</string>
     <string name="settings_control_mouse_pointer_hotspot_x_percent">Coordenada X</string>
     <string name="settings_control_mouse_pointer_hotspot_y_percent">Coordenada Y</string>
