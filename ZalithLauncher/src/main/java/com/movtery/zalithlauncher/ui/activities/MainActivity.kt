@@ -44,8 +44,10 @@ import com.movtery.zalithlauncher.context.COPY_LABEL_LINK
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.control.ControlManager
+import com.movtery.zalithlauncher.game.plugin.driver.DriverPluginManager
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.notification.NotificationManager
+import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.path.URL_SUPPORT
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
@@ -64,6 +66,7 @@ import com.movtery.zalithlauncher.ui.theme.feativals.FestivalEffects
 import com.movtery.zalithlauncher.upgrade.TooFrequentOperationException
 import com.movtery.zalithlauncher.utils.compareLangTag
 import com.movtery.zalithlauncher.utils.copyText
+import com.movtery.zalithlauncher.utils.device.VulkanChecker
 import com.movtery.zalithlauncher.utils.festival.getTodayFestivals
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.isChinese
@@ -92,6 +95,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -255,6 +259,18 @@ class MainActivity : BaseAppCompatActivity() {
         val festivals = getTodayFestivals(
             containsChinese = isChinese(this@MainActivity)
         )
+
+        if (AllSettings.zinkPreferSystemDriver.getValue()) {
+            VulkanChecker.checkCapabilities(null, null, null)
+        } else {
+            val driver = DriverPluginManager.getDriver()
+            if (driver.isLauncher) {
+                VulkanChecker.checkCapabilities(null, null, null)
+            } else {
+                val tempDir = File(PathManager.DIR_CACHE, "vulkan_temp")
+                VulkanChecker.checkCapabilities(null, driver.path, tempDir.absolutePath)
+            }
+        }
 
         setContent {
             ZalithLauncherTheme(

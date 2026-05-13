@@ -60,14 +60,31 @@ Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeSetLogCallback(
 
 #define LOAD_VK_FUNC(name) PFN_##name p##name = (PFN_##name)dlsym(vulkan_handle, #name)
 
+void* loadTurnipVulkan(const char* driver_path, const char* native_dir, const char* cache_dir);
+
 JNIEXPORT jobject JNICALL
-Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeCheckVulkan(JNIEnv *env, jclass clazz)
-{
+Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeCheckVulkan(
+        JNIEnv *env, jclass clazz, jstring jDriverPath, jstring jNativeDir, jstring jCacheDir
+) {
     (void)clazz;
 
-    void* vulkan_handle = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
+    const char *driverPath = jDriverPath ? (*env)->GetStringUTFChars(env, jDriverPath, NULL) : NULL;
+    const char *nativeDir  = jNativeDir  ? (*env)->GetStringUTFChars(env, jNativeDir, NULL) : NULL;
+    const char *cacheDir   = jCacheDir   ? (*env)->GetStringUTFChars(env, jCacheDir, NULL) : NULL;
+
+    void* vulkan_handle = NULL;
+    if (nativeDir && cacheDir) {
+        vulkan_handle = loadTurnipVulkan(driverPath, nativeDir, cacheDir);
+    } else {
+        vulkan_handle = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
+    }
+
+    if (driverPath) (*env)->ReleaseStringUTFChars(env, jDriverPath, driverPath);
+    if (nativeDir)  (*env)->ReleaseStringUTFChars(env, jNativeDir, nativeDir);
+    if (cacheDir)   (*env)->ReleaseStringUTFChars(env, jCacheDir, cacheDir);
+
     if (!vulkan_handle) {
-        LOG_E("Failed to dlopen libvulkan.so: %s", dlerror());
+        LOG_E("Failed to load Vulkan library.");
         return NULL;
     }
 

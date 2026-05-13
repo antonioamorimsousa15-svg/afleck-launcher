@@ -46,6 +46,7 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_LDLIBS := -ldl -llog
 LOCAL_MODULE := vulkan_check
+LOCAL_SHARED_LIBRARIES := driver_helper
 LOCAL_SRC_FILES := vulkan_checker.c
 include $(BUILD_SHARED_LIBRARY)
 

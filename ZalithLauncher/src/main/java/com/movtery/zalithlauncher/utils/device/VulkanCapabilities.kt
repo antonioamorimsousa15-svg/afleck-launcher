@@ -20,6 +20,8 @@ package com.movtery.zalithlauncher.utils.device
 
 import android.util.Log
 import androidx.annotation.Keep
+import org.apache.commons.io.FileUtils
+import java.io.File
 
 @Keep
 data class VulkanCapabilities(
@@ -96,9 +98,17 @@ object VulkanChecker {
      * 查询系统 Vulkan 支持情况
      * @return 如果不支持 Vulkan 或初始化失败，返回 null
      */
-    fun checkCapabilities(): VulkanCapabilities? {
+    fun checkCapabilities(
+        driverPath: String?,
+        nativeDir: String?,
+        cacheDir: String?
+    ): VulkanCapabilities? {
         return try {
-            nativeCheckVulkan()?.also { caps ->
+            nativeCheckVulkan(
+                driverPath = driverPath,
+                nativeDir = nativeDir,
+                cacheDir = cacheDir,
+            )?.also { caps ->
                 Log.i(TAG, "Vulkan version: ${caps.apiVersionMajor}.${caps.apiVersionMinor}.${caps.apiVersionPatch}")
                 Log.i(TAG, "Version >= 1.2: ${caps.isVersionSupported}")
                 if (caps.missingExtensions.isNotEmpty()) {
@@ -115,6 +125,10 @@ object VulkanChecker {
         } catch (e: Exception) {
             Log.e(TAG, "Native check failed", e)
             null
+        } finally {
+            if (nativeDir != null && cacheDir != null) {
+                FileUtils.deleteQuietly(File(cacheDir))
+            }
         }
     }
 
@@ -122,5 +136,9 @@ object VulkanChecker {
     private external fun nativeSetLogCallback(callback: VulkanLogCallback)
 
     @JvmStatic
-    private external fun nativeCheckVulkan(): VulkanCapabilities?
+    private external fun nativeCheckVulkan(
+        driverPath: String?,
+        nativeDir: String?,
+        cacheDir: String?
+    ): VulkanCapabilities?
 }
