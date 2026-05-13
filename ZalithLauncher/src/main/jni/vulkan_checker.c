@@ -58,15 +58,6 @@ Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeSetLogCallback(
     }
 }
 
-/* ---------- Vulkan 函数指针类型 ---------- */
-typedef VkResult (*PFN_vkEnumerateInstanceVersion)(uint32_t* pApiVersion);
-typedef VkResult (*PFN_vkCreateInstance)(const VkInstanceCreateInfo*, const VkAllocationCallbacks*, VkInstance*);
-typedef void     (*PFN_vkDestroyInstance)(VkInstance, const VkAllocationCallbacks*);
-typedef VkResult (*PFN_vkEnumeratePhysicalDevices)(VkInstance, uint32_t*, VkPhysicalDevice*);
-typedef void     (*PFN_vkGetPhysicalDeviceFeatures)(VkPhysicalDevice, VkPhysicalDeviceFeatures*);
-typedef VkResult (*PFN_vkEnumerateDeviceExtensionProperties)(VkPhysicalDevice, const char*, uint32_t*, VkExtensionProperties*);
-typedef void     (*PFN_vkGetPhysicalDeviceFeatures2)(VkPhysicalDevice, VkPhysicalDeviceFeatures2*);
-
 #define LOAD_VK_FUNC(name) PFN_##name p##name = (PFN_##name)dlsym(vulkan_handle, #name)
 
 JNIEXPORT jobject JNICALL
