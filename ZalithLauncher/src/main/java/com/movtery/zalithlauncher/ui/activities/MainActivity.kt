@@ -32,8 +32,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
@@ -95,9 +93,11 @@ import com.movtery.zalithlauncher.viewmodel.ModpackImportOperation
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackVersionNameOperation
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import com.movtery.zalithlauncher.viewmodel.VulkanCheckerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
@@ -155,11 +155,14 @@ class MainActivity : BaseAppCompatActivity() {
     private val logsUploadViewModel: LogsUploadViewModel by viewModels()
 
     /**
+     * Vulkan检测状态 ViewModel
+     */
+    private val vulkanCheckerViewModel: VulkanCheckerViewModel by viewModels()
+
+    /**
      * 是否开启捕获按键模式
      */
     private var isCaptureKey = false
-
-    private var vcOperation by mutableStateOf<VCOperation>(VCOperation.None)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -252,6 +255,9 @@ class MainActivity : BaseAppCompatActivity() {
                         val event0 = event.event
                         handleHomePageEvent(event0.key, event0.data)
                     }
+                    is EventViewModel.Event.VulkanCheck -> {
+                        checkVulkan()
+                    }
                     else -> {
                         //忽略
                     }
@@ -265,8 +271,6 @@ class MainActivity : BaseAppCompatActivity() {
         val festivals = getTodayFestivals(
             containsChinese = isChinese(this@MainActivity)
         )
-
-        checkVulkan()
 
         setContent {
             ZalithLauncherTheme(
@@ -306,6 +310,7 @@ class MainActivity : BaseAppCompatActivity() {
                         exitActivity = {
                             this@MainActivity.finish()
                         },
+                        waitForVulkanChecker = ::waitForVulkanChecker,
                         submitError = {
                             errorViewModel.showError(it)
                         },
@@ -436,10 +441,18 @@ class MainActivity : BaseAppCompatActivity() {
                     onLinkClick = { eventViewModel.sendEvent(EventViewModel.Event.OpenLink(it)) }
                 )
 
+                val vcOperation by vulkanCheckerViewModel.vcOperation.collectAsStateWithLifecycle()
                 VulkanChecker(
                     operation = vcOperation,
                     onChange = {
-                        vcOperation = it
+                        vulkanCheckerViewModel.changeOperation(it)
+                    },
+                    startCheck = {
+                        eventViewModel.sendEvent(EventViewModel.Event.VulkanCheck)
+                    },
+                    confirmResult = {
+                        vulkanCheckerViewModel.resumeCont()
+                        AllSettings.autoVulkanChecker.save(false)
                     }
                 )
             }
@@ -451,19 +464,29 @@ class MainActivity : BaseAppCompatActivity() {
         handleImportIfNeeded(intent)
     }
 
+    private suspend fun waitForVulkanChecker() {
+        suspendCancellableCoroutine { cont ->
+            vulkanCheckerViewModel.vulkanCheckerCont = cont
+            vulkanCheckerViewModel.changeOperation(VCOperation.Tip)
+        }
+    }
+
     /**
      * 检查设备 Vulkan 支持情况
      */
-    private fun checkVulkan() {
+    private suspend fun checkVulkan() {
         val driver = DriverPluginManager.getDriver()
         val useTurnip = !(AllSettings.zinkPreferSystemDriver.getValue() || driver.isLauncher)
-        val result = if (useTurnip) {
-            val tempDir = File(PathManager.DIR_CACHE, "vulkan_temp")
-            VulkanChecker.checkCapabilities(null, driver.path, tempDir.absolutePath)
-        } else {
-            VulkanChecker.checkCapabilities(null, null, null)
+
+        withContext(Dispatchers.Main) {
+            val result = if (useTurnip) {
+                val tempDir = File(PathManager.DIR_CACHE, "vulkan_temp")
+                VulkanChecker.checkCapabilities(null, driver.path, tempDir.absolutePath)
+            } else {
+                VulkanChecker.checkCapabilities(null, null, null)
+            }
+            vulkanCheckerViewModel.changeOperation(VCOperation.Result(result, useTurnip))
         }
-        vcOperation = VCOperation.Result(result, useTurnip)
     }
 
     /**

@@ -25,6 +25,12 @@ import com.movtery.zalithlauncher.utils.device.VulkanCapabilities
  */
 sealed interface VCOperation {
     data object None: VCOperation
+
+    /**
+     * Vulkan 检查提示对话框
+     */
+    data object Tip: VCOperation
+
     /**
      * @param data 检查结果
      * @param useTurnip 是否使用了 Turnip

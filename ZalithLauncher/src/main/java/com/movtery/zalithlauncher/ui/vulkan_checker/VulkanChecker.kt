@@ -35,15 +35,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.utils.device.VulkanCapabilities
 
 @Composable
 fun VulkanChecker(
     operation: VCOperation,
-    onChange: (VCOperation) -> Unit
+    onChange: (VCOperation) -> Unit,
+    startCheck: () -> Unit,
+    confirmResult: () -> Unit,
 ) {
     when (operation) {
         is VCOperation.None -> {}
+        is VCOperation.Tip -> {
+            SimpleAlertDialog(
+                title = stringResource(R.string.game_vulkan_check_title),
+                text = stringResource(R.string.game_vulkan_check_text),
+                dismissByDialog = false,
+                onDismiss = startCheck
+            )
+        }
         is VCOperation.Result -> {
             val data = operation.data
             val useTurnip = operation.useTurnip
@@ -108,6 +119,7 @@ fun VulkanChecker(
                     Button(
                         onClick = {
                             onChange(VCOperation.None)
+                            confirmResult()
                         }
                     ) {
                         Text(text = stringResource(R.string.generic_confirm))
