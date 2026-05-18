@@ -118,6 +118,8 @@ class EventViewModel : ViewModel() {
             /** 主页触发的事件 */
             data class Event(val event: MarkdownBlock.Button.Event): HomePage
         }
+        /** 设备 Vulkan 检查 */
+        data object VulkanCheck: Event
     }
 }
 
