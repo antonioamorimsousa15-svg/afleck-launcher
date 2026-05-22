@@ -84,39 +84,6 @@ android {
         }
     }
 
-    androidComponents {
-        onVariants { variant ->
-            variant.outputs.forEach { output ->
-                if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
-                    val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
-                    afterEvaluate {
-                        val task = tasks.named("merge${variantName}Assets").get() as MergeSourceSetFolders
-                        task.doLast {
-                            val arch = System.getProperty("arch", "all")
-                            val assetsDir = task.outputDir.get().asFile
-                            val jreList = listOf("jre-8", "jre-17", "jre-21")
-                            println("arch:$arch")
-                            jreList.forEach { jreVersion ->
-                                val runtimeDir = File("$assetsDir/runtimes/$jreVersion")
-                                println("runtimeDir:${runtimeDir.absolutePath}")
-                                runtimeDir.listFiles()?.forEach {
-                                    if (arch != "all" && it.name != "version" && !it.name.contains("universal") && it.name != "bin-${arch}.tar.xz") {
-                                        println("delete:${it} : ${it.delete()}")
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    (output.getFilter(ABI)?.identifier ?: "all").let { abi ->
-                        val baseName = "$launcherName-${if (variant.buildType == "release") defaultConfig.versionName else "Debug-${defaultConfig.versionName}"}"
-                        output.outputFileName = if (abi == "all") "$baseName.apk" else "$baseName-$abi.apk"
-                    }
-                }
-            }
-        }
-    }
-
     splits {
         val arch = System.getProperty("arch", "all").takeIf { it != "all" } ?: return@splits
         abi {
@@ -161,6 +128,41 @@ android {
         }
     }
 }
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
+                val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
+                afterEvaluate {
+                    val task = tasks.named("merge${variantName}Assets").get() as MergeSourceSetFolders
+                    task.doLast {
+                        val arch = System.getProperty("arch", "all")
+                        val assetsDir = task.outputDir.get().asFile
+                        val jreList = listOf("jre-8", "jre-17", "jre-21")
+                        val tag = "JREAssetsCleanup"
+                        logger.lifecycle("[$tag] arch: $arch")
+                        jreList.forEach { jreVersion ->
+                            val runtimeDir = File("$assetsDir/runtimes/$jreVersion")
+                            logger.lifecycle("[$tag] runtimeDir: ${runtimeDir.absolutePath}")
+                            runtimeDir.listFiles()?.forEach {
+                                if (arch != "all" && it.name != "version" && !it.name.contains("universal") && it.name != "bin-${arch}.tar.xz") {
+                                    logger.lifecycle("[$tag] delete: $it : ${it.delete()}")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                (output.getFilter(ABI)?.identifier ?: "all").let { abi ->
+                    val baseName = "$launcherName-${if (variant.buildType == "release") launcherVersionName else "Debug-$launcherVersionName"}"
+                    output.outputFileName = if (abi == "all") "$baseName.apk" else "$baseName-$abi.apk"
+                }
+            }
+        }
+    }
+}
+
 
 kotlin {
     compilerOptions {
