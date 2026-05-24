@@ -97,10 +97,21 @@ private fun handlePermissionsForAndroid11AndAbove(
     if (!checkPermissionsForAndroid11AndAbove()) {
         showPermissionRequestDialog(activity, title, message, object : RequestPermissions {
             override fun onRequest() {
-                val intent =
-                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.data = ("package:${activity.packageName}").toUri()
-                activity.startActivityForResult(intent, REQUEST_CODE_PERMISSIONS)
+
+                //先检查系统是否有 Activity 能处理
+                if (intent.resolveActivity(activity.packageManager) != null) {
+                    try {
+                        activity.startActivityForResult(intent, REQUEST_CODE_PERMISSIONS)
+                    } catch (e: Exception) {
+                        Logger.warning(TAG, "Failed to start MANAGE_APP_ALL_FILES_ACCESS_PERMISSION activity", e)
+                        //回退到 Android 10 的权限请求
+                        handlePermissionsForAndroid10AndBelow(activity, title, message, hasPermission, onDialogCancel)
+                    }
+                } else {
+                    handlePermissionsForAndroid10AndBelow(activity, title, message, hasPermission, onDialogCancel)
+                }
             }
 
             override fun onCancel() {
