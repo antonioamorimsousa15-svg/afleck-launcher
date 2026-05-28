@@ -22,12 +22,16 @@ import android.app.Activity
 import android.net.Uri
 import android.os.Parcelable
 import android.widget.Toast
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -49,6 +53,7 @@ import com.movtery.zalithlauncher.game.renderer.RendererInterface
 import com.movtery.zalithlauncher.game.renderer.Renderers
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.enums.BackgroundBlur
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.VideoPlayer
 import com.movtery.zalithlauncher.ui.screens.content.FirstLoginMenu
@@ -61,10 +66,13 @@ import com.movtery.zalithlauncher.utils.string.isBiggerTo
 import com.movtery.zalithlauncher.utils.string.isLowerTo
 import com.movtery.zalithlauncher.viewmodel.BackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
+import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 import dev.chrisbanes.haze.HazeInputScale
+import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.HazeColorEffect
 import dev.chrisbanes.haze.blur.blurEffect
 import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -310,24 +318,58 @@ fun Background(
     modifier: Modifier = Modifier,
     allowVideo: Boolean = true
 ) {
-    val blurRadius = AllSettings.backgroundBlur.state
-    when {
-        viewModel.isVideo && allowVideo -> {
-            VideoPlayer(
-                videoUri = Uri.fromFile(viewModel.backgroundFile),
-                modifier = modifier.glass(blurRadius),
-                refreshTrigger = viewModel.refreshTrigger,
-                volume = AllSettings.videoBackgroundVolume.state / 100f
-            )
-        }
-        viewModel.isImage -> {
-            BackgroundImage(
-                modifier = modifier.glass(blurRadius),
-                imageFile = viewModel.backgroundFile,
-                refreshTrigger = viewModel.refreshTrigger
-            )
+    Box(
+        modifier = modifier.backgroundBlur(
+            blur = AllSettings.backgroundBlur.state,
+            hazeState = viewModel.hazeState,
+        )
+    ) {
+        when {
+            viewModel.isVideo && allowVideo -> {
+                VideoPlayer(
+                    videoUri = Uri.fromFile(viewModel.backgroundFile),
+                    modifier = Modifier.fillMaxSize(),
+                    refreshTrigger = viewModel.refreshTrigger,
+                    volume = AllSettings.videoBackgroundVolume.state / 100f
+                )
+            }
+            viewModel.isImage -> {
+                BackgroundImage(
+                    modifier = Modifier.fillMaxSize(),
+                    imageFile = viewModel.backgroundFile,
+                    refreshTrigger = viewModel.refreshTrigger
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun Modifier.backgroundBlur(
+    blur: Int,
+    hazeState: HazeState,
+): Modifier {
+    return when (AllSettings.backgroundBlurType.state) {
+        BackgroundBlur.Background -> this.glass(blur, null)
+        BackgroundBlur.Foreground -> this.hazeSource(hazeState)
+    }
+}
+
+/**
+ * 背景模糊效果
+ * @param enabled 是否应用模糊效果
+ */
+@Composable
+fun Modifier.backgroundGlass(
+    blur: Int,
+    shape: Shape,
+    enabled: Boolean = true,
+): Modifier {
+    val clipModifier = this.clip(shape)
+    if (AllSettings.backgroundBlurType.state == BackgroundBlur.Background) return clipModifier
+    if (!enabled) return clipModifier
+    val state = LocalBackgroundViewModel.current?.hazeState ?: return clipModifier
+    return clipModifier.glass(blur, state)
 }
 
 /**
@@ -335,8 +377,9 @@ fun Background(
  */
 private fun Modifier.glass(
     blur: Int,
+    hazeState: HazeState?,
 ): Modifier {
-    if (blur <= 0) return this
+    if (blur <= 0 || AllSettings.launcherBackgroundOpacity.state >= 100) return this
 
     val blurDp = blur.dp
     val t = (blur / 80f).coerceIn(0f, 1f)
@@ -353,12 +396,12 @@ private fun Modifier.glass(
     )
 
     return this
-        .hazeEffect {
+        .hazeEffect(hazeState) {
             this.inputScale = HazeInputScale.Fixed(inputScale)
             blurEffect {
                 this.blurEnabled = true
                 this.blurRadius = blurDp
-                this.noiseFactor = -1f
+                this.noiseFactor = 0.3f
                 this.colorEffects = listOf(
                     HazeColorEffect.tint(Color.White.copy(alpha = whiteAlpha), BlendMode.SrcOver),
                 )
