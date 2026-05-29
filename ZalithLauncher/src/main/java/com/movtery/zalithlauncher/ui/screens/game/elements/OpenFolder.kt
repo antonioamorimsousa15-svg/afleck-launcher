@@ -71,7 +71,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.context.copyLocalFile
 import com.movtery.zalithlauncher.context.getFileName
-import com.movtery.zalithlauncher.contract.extensionToMimeType
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.components.MarqueeText
@@ -309,7 +308,7 @@ fun OpenFolderLayer(
                                     //导入按钮
                                     Button(
                                         onClick = {
-                                            launcher.launch("zip".extensionToMimeType())
+                                            launcher.launch("*/*")
                                         }
                                     ) {
                                         Text(text = stringResource(R.string.generic_import))
