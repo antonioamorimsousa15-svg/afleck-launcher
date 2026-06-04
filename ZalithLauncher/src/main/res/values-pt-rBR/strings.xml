@@ -111,8 +111,8 @@
     <string name="error_network_unreachable">Rede indisponível</string>
     <string name="error_connection_failed">Falha ao conectar ao servidor</string>
     <string name="error_parse_failed">Falha ao analisar os dados</string>
-    <string name="error_unauthorized">(%s) Não autorizado</string>
-    <string name="error_notfound">(%s) Recurso não encontrado</string>
+    <string name="error_unauthorized">(%s) Verifique suas credenciais e tente novamente</string>
+    <string name="error_notfound">(%s) O recurso solicitado não pôde ser encontrado</string>
     <string name="splash_screen_unpack_desc">O Launcher precisa instalar esses arquivos para garantir que o Minecraft funcione corretamente. Eles estão incluídos no aplicativo e devem ser extraídos primeiro. Clique no botão abaixo para iniciar a extração e a atualização.</string>
     <string name="splash_screen_installing">O Launcher está extraindo esses arquivos.\nAssim que terminar, ele entrará automaticamente na tela principal. Aguarde pacientemente</string>
     <string name="splash_screen_agree">Instalar</string>
@@ -1215,4 +1215,18 @@
     <string name="cape_name_crafter">Artesão</string>
     <string name="settings_title_blur">Efeito de Desfoque</string>
     <string name="settings_launcher_background_blur_summary">Ajuste o efeito de desfoque de fundo. Esta opção consome muito desempenho.</string>
+    <string name="error_bad_request">(%s) O servidor não conseguiu entender a solicitação</string>
+    <string name="error_forbidden">(%s) Você não tem permissão para acessar este recurso</string>
+    <string name="error_not_acceptable">(%s) Não Aceitável</string>
+    <string name="error_request_timeout">(%s) O servidor excedeu o tempo limite de espera pela solicitação</string>
+    <string name="error_conflict">(%s) A solicitação entra em conflito com o estado atual</string>
+    <string name="error_gone">(%s) O recurso solicitado não está mais disponível</string>
+    <string name="error_too_many_requests">(%s) Tente novamente mais tarde</string>
+    <string name="error_internal_server_error">(%s) O servidor encontrou uma condição inesperada</string>
+    <string name="error_bad_gateway">(%s) O servidor recebeu uma resposta inválida de um servidor upstream</string>
+    <string name="error_service_unavailable">(%s) O servidor está temporariamente indisponível para processar a solicitação</string>
+    <string name="error_gateway_timeout">(%s) O servidor não recebeu uma resposta em tempo hábil resposta</string>
+    <string name="game_menu_option_hotbar_double_click">Toque duas vezes para trocar o item com a outra mão</string>
+    <string name="game_menu_option_hotbar_long_click">Pressione e segure para soltar o item selecionado</string>
+    <string name="game_menu_option_hotbar_long_click_delay">Atraso de ativação da barra de atalhos ao pressionar e segurar</string>
 </resources>
