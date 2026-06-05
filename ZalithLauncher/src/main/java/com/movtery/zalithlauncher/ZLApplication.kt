@@ -30,6 +30,7 @@ import coil3.gif.GifDecoder
 import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
+import coil3.svg.SvgDecoder
 import com.kyant.fishnet.Fishnet
 import com.movtery.zalithlauncher.context.refreshContext
 import com.movtery.zalithlauncher.coroutine.TaskSystem
@@ -41,7 +42,6 @@ import com.movtery.zalithlauncher.ui.activities.showFatalError
 import com.movtery.zalithlauncher.ui.activities.showLauncherCrash
 import com.movtery.zalithlauncher.utils.device.Architecture
 import com.movtery.zalithlauncher.utils.logging.Logger
-import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.utils.writeCrashFile
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.HiltAndroidApp
@@ -65,13 +65,13 @@ class ZLApplication : Application(), SingletonImageLoader.Factory {
             val throwable = if (th is SplashException) th.cause!!
             else th
 
-            lError("An exception occurred", throwable)
+            Logger.error("Startup", "An exception occurred", throwable)
 
             writeCrashFile(
                 file = PathManager.FILE_CRASH_REPORT,
                 throwable = throwable
             ) { t ->
-                lError("An exception occurred while saving the crash report", t)
+                Logger.error("AppCrash", "An exception occurred while saving the crash report", t)
             }
 
             showLauncherCrash(this@ZLApplication, throwable, th !is SplashException)
@@ -127,7 +127,10 @@ class ZLApplication : Application(), SingletonImageLoader.Factory {
                     .directory(PathManager.DIR_IMAGE_CACHE.toOkioPath())
                     .build()
             }
-            .components { add(GifDecoder.Factory()) }
+            .components {
+                add(GifDecoder.Factory())
+                add(SvgDecoder.Factory())
+            }
             .crossfade(true)
             .build()
     }

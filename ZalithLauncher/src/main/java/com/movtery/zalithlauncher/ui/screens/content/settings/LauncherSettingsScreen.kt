@@ -21,15 +21,26 @@ package com.movtery.zalithlauncher.ui.screens.content.settings
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,7 +64,9 @@ import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.AppLanguage
+import com.movtery.zalithlauncher.setting.enums.BackgroundBlur
 import com.movtery.zalithlauncher.setting.enums.DarkMode
+import com.movtery.zalithlauncher.setting.enums.HomePageType
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
 import com.movtery.zalithlauncher.setting.enums.applyLanguage
 import com.movtery.zalithlauncher.setting.unit.floatRange
@@ -61,8 +74,10 @@ import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedColumn
 import com.movtery.zalithlauncher.ui.components.ColorPickerDialog
 import com.movtery.zalithlauncher.ui.components.IconTextButton
+import com.movtery.zalithlauncher.ui.components.OwnOutlinedTextField
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.TitleAndSummary
+import com.movtery.zalithlauncher.ui.components.WarningCard
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.TitledNavKey
@@ -78,13 +93,16 @@ import com.movtery.zalithlauncher.utils.animation.TransitionAnimationType
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.isChinaMainland
 import com.movtery.zalithlauncher.utils.logging.Logger
-import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.utils.string.getMessageOrToString
 import com.movtery.zalithlauncher.viewmodel.BackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
+import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
 import kotlinx.coroutines.Dispatchers
 import java.io.File
+
+private const val TAG = "LauncherSettingsScreen"
 
 private sealed interface CustomColorOperation {
     data object None : CustomColorOperation
@@ -92,12 +110,15 @@ private sealed interface CustomColorOperation {
     data object Dialog: CustomColorOperation
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LauncherSettingsScreen(
     key: NestedNavKey.Settings,
     settingsScreenKey: TitledNavKey?,
     mainScreenKey: TitledNavKey?,
-    submitError: (ErrorViewModel.ThrowableMessage) -> Unit
+    eventViewModel: EventViewModel,
+    toHomePageEditor: () -> Unit,
+    submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -225,7 +246,7 @@ fun LauncherSettingsScreen(
 
                         IntSliderSettingsCard(
                             modifier = Modifier.fillMaxWidth(),
-                            position = CardPosition.Bottom,
+                            position = CardPosition.Middle,
                             unit = AllSettings.videoBackgroundVolume,
                             title = stringResource(R.string.settings_launcher_background_video_volume_title),
                             summary = stringResource(R.string.settings_launcher_background_video_volume_summary),
@@ -234,6 +255,222 @@ fun LauncherSettingsScreen(
                             enabled = backgroundViewModel.isValid && backgroundViewModel.isVideo,
                             fineTuningControl = true
                         )
+
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Bottom,
+                            unit = AllSettings.backgroundBlur,
+                            title = stringResource(R.string.settings_title_blur),
+                            summary = stringResource(R.string.settings_launcher_background_blur_summary),
+                            valueRange = AllSettings.backgroundBlur.floatRange,
+                            suffix = "Dp",
+                            enabled = backgroundViewModel.isValid,
+                            fineTuningControl = true,
+                            appendContent = {
+                                val unit = AllSettings.backgroundBlurType
+                                val state = unit.state
+                                IconButton(
+                                    modifier = Modifier
+                                        .padding(start = 12.dp)
+                                        .size(32.dp),
+                                    colors = IconButtonDefaults.iconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                                    ),
+                                    onClick = {
+                                        unit.save(state.switch())
+                                    }
+                                ) {
+                                    Crossfade(
+                                        targetState = state
+                                    ) { target ->
+                                        val painter = when (target) {
+                                            BackgroundBlur.Background -> painterResource(R.drawable.ic_blur_circular_outlined)
+                                            BackgroundBlur.Foreground -> painterResource(R.drawable.ic_blur_circular_filled)
+                                        }
+                                        Icon(
+                                            painter = painter,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            //启动器主页
+            AnimatedItem(scope) { yOffset ->
+                SettingsCardColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                ) {
+                    val typeUnit = AllSettings.homePageType
+                    val urlUnit = AllSettings.homePageURL
+
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Single,
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(all = 16.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.settings_launcher_home_page_title),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            //类型选择
+                            FlowRow(
+                                modifier = Modifier
+                                    .padding(top = 4.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                HomePageType.entries.forEach { type ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        RadioButton(
+                                            selected = type == typeUnit.state,
+                                            onClick = {
+                                                typeUnit.save(type)
+                                                eventViewModel.sendEvent(
+                                                    EventViewModel.Event.HomePage.Reload
+                                                )
+                                            }
+                                        )
+                                        Text(
+                                            text = stringResource(type.textRes),
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
+                                    }
+                                }
+                            }
+                            //从本地加载
+                            AnimatedVisibility(
+                                visible = typeUnit.state == HomePageType.FromLocal
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    WarningCard(
+                                        title = stringResource(R.string.generic_tip),
+                                        icon = { innerModifier ->
+                                            Icon(
+                                                modifier = innerModifier,
+                                                painter = painterResource(R.drawable.ic_lightbulb),
+                                                contentDescription = null
+                                            )
+                                        },
+                                        text = {
+                                            Text(
+                                                text = stringResource(R.string.settings_launcher_home_page_type_local_tip),
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                            Text(
+                                                text = stringResource(R.string.settings_launcher_home_page_type_warning),
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        FilledTonalButton(
+                                            onClick = {
+                                                eventViewModel.sendEvent(
+                                                    EventViewModel.Event.HomePage.Reload
+                                                )
+                                            }
+                                        ) {
+                                            Text(text = stringResource(R.string.generic_refresh))
+                                        }
+                                        //生成官方主页文档
+                                        FilledTonalButton(
+                                            onClick = {
+                                                eventViewModel.sendEvent(
+                                                    EventViewModel.Event.HomePage.GenDocPage
+                                                )
+                                            }
+                                        ) {
+                                            Text(text = stringResource(R.string.settings_launcher_home_page_type_local_gen_doc))
+                                        }
+                                        val viewModel = LocalHomePageViewModel.current
+                                        //编辑主页文件
+                                        FilledTonalButton(
+                                            onClick = {
+                                                viewModel.loadLocalEditor()
+                                                toHomePageEditor()
+                                            }
+                                        ) {
+                                            Text(text = stringResource(R.string.generic_edit))
+                                        }
+                                    }
+                                }
+                            }
+
+                            //从网络加载
+                            AnimatedVisibility(
+                                visible = typeUnit.state == HomePageType.FromURL
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    WarningCard(
+                                        title = stringResource(R.string.generic_tip),
+                                        icon = { innerModifier ->
+                                            Icon(
+                                                modifier = innerModifier,
+                                                painter = painterResource(R.drawable.ic_lightbulb),
+                                                contentDescription = null
+                                            )
+                                        },
+                                        text = {
+                                            Text(
+                                                text = stringResource(R.string.settings_launcher_home_page_type_url_tip),
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                            Text(
+                                                text = stringResource(R.string.settings_launcher_home_page_type_warning),
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    )
+                                    //主页下载链接
+                                    OwnOutlinedTextField(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        value = urlUnit.state,
+                                        onValueChange = { urlUnit.save(it) },
+                                        singleLine = true,
+                                        label = {
+                                            Text(text = stringResource(R.string.settings_launcher_home_page_url))
+                                        },
+                                        trailingIcon = {
+                                            IconButton(
+                                                onClick = {
+                                                    eventViewModel.sendEvent(
+                                                        EventViewModel.Event.HomePage.Reload
+                                                    )
+                                                }
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.ic_refresh),
+                                                    contentDescription = stringResource(R.string.generic_refresh)
+                                                )
+                                            }
+                                        },
+                                        shape = MaterialTheme.shapes.large
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -363,7 +600,7 @@ fun LauncherSettingsScreen(
                                         )
                                     },
                                     onError = { e ->
-                                        lError("Failed to package log files.", e)
+                                        Logger.error(TAG, "Failed to package log files.", e)
                                     }
                                 )
                             )
@@ -431,6 +668,7 @@ private fun CustomBackground(
         backgroundViewModel = backgroundViewModel
     )
 
+    val importErrorText = stringResource(R.string.error_import_image)
     val filePicker = rememberLauncherForActivityResult(
         contract = MediaPickerContract(
             allowImages = true,
@@ -450,7 +688,7 @@ private fun CustomBackground(
                         backgroundViewModel.delete()
                         submitError(
                             ErrorViewModel.ThrowableMessage(
-                                title = context.getString(R.string.error_import_image),
+                                title = importErrorText,
                                 message = th.getMessageOrToString()
                             )
                         )

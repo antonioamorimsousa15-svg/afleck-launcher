@@ -59,8 +59,7 @@ import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.Re
 import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.SearchAssetsState
 import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.SearchFilter
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
-import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
-import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
+import com.movtery.zalithlauncher.utils.logging.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -69,6 +68,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private const val TAG = "SearchAssetsScreen"
 
 /**
  * 资源搜索屏幕的 view model
@@ -167,7 +168,7 @@ private class SearchScreenViewModel(
 
     private fun putResult(result: PlatformSearchResult) {
         result.getAssetsPage(platformClasses).also { page ->
-            lInfo("Searched page info: {pageNumber: ${page.pageNumber}, pageIndex: ${page.pageIndex}, totalPage: ${page.totalPage}, isLastPage: ${page.isLastPage}}")
+            Logger.info(TAG, "Searched page info: {pageNumber: ${page.pageNumber}, pageIndex: ${page.pageIndex}, totalPage: ${page.totalPage}, isLastPage: ${page.isLastPage}}")
 
             val targetIndex = page.pageNumber - 1
 
@@ -211,7 +212,7 @@ private class SearchScreenViewModel(
             runCatching {
                 MinecraftVersions.refreshVersions(force = false)
             }.onFailure {
-                lWarning("Failed to refresh Minecraft versions")
+                Logger.warning(TAG, "Failed to refresh Minecraft versions")
             }
         }
     }
@@ -243,6 +244,7 @@ private fun rememberSearchAssetsViewModel(
  * @param currentKey 当前的Key
  * @param platformClasses 搜索资源的分类
  * @param initialPlatform 初始搜索平台
+ * @param onPlatformChange 搜索平台变更
  * @param enablePlatform 是否允许更改平台
  * @param getCategories 根据平台获取可用的资源类别过滤器
  * @param enableModLoader 是否允许更改模组加载器
@@ -260,6 +262,7 @@ fun SearchAssetsScreen(
     currentKey: TitledNavKey?,
     platformClasses: PlatformClasses,
     initialPlatform: Platform,
+    onPlatformChange: (Platform) -> Unit = {},
     enablePlatform: Boolean = true,
     getCategories: (Platform) -> List<PlatformFilterCode>,
     enableModLoader: Boolean = false,
@@ -369,6 +372,7 @@ fun SearchAssetsScreen(
                     viewModel.researchWithFilter(
                         viewModel.searchFilter.copy(categories = emptyList(), modloader = null)
                     )
+                    onPlatformChange(it)
                 },
                 searchName = viewModel.searchFilter.searchName,
                 onSearchNameChange = {

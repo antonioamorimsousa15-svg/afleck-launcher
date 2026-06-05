@@ -98,11 +98,11 @@ import com.movtery.zalithlauncher.ui.screens.content.versions.VersionOverViewScr
 import com.movtery.zalithlauncher.ui.screens.navigateOnce
 import com.movtery.zalithlauncher.ui.screens.onBack
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
+import com.movtery.zalithlauncher.ui.theme.showThemed
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
-import com.movtery.zalithlauncher.utils.logging.Logger.lError
+import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
-import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.Dispatchers
@@ -112,6 +112,8 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
+
+private const val TAG = "VersionSettings"
 
 /** 更新加载器状态操作 */
 private sealed interface UpdateLoaderOperation {
@@ -154,7 +156,7 @@ private class UpdateLoaderViewModel: ViewModel() {
                             .setPositiveButton(R.string.generic_confirm) { dialog, _ ->
                                 dialog.dismiss()
                             }
-                            .show()
+                            .showThemed()
                     }
                 },
                 onError = { th ->
@@ -195,7 +197,6 @@ fun VersionSettingsScreen(
     backScreenViewModel: ScreenBackStackViewModel,
     backToMainScreen: () -> Unit,
     onExportModpack: () -> Unit,
-    launchGameViewModel: LaunchGameViewModel,
     eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
@@ -256,7 +257,6 @@ fun VersionSettingsScreen(
                 },
                 backToMainScreen = backToMainScreen,
                 onExport = onExportModpack,
-                launchGameViewModel = launchGameViewModel,
                 version = key.version,
                 eventViewModel = eventViewModel,
                 submitError = submitError
@@ -370,7 +370,6 @@ private fun NavigationUI(
     onCurrentKeyChange: (TitledNavKey?) -> Unit,
     backToMainScreen: () -> Unit,
     onExport: () -> Unit,
-    launchGameViewModel: LaunchGameViewModel,
     version: Version,
     eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
@@ -401,6 +400,7 @@ private fun NavigationUI(
                         backToMainScreen = backToMainScreen,
                         onExport = onExport,
                         version = version,
+                        eventViewModel = eventViewModel,
                         submitError = submitError
                     )
                 }
@@ -410,6 +410,11 @@ private fun NavigationUI(
                         versionsScreenKey = versionsScreenKey,
                         version = version,
                         backToMainScreen = backToMainScreen,
+                        onCheckVulkan = {
+                            eventViewModel.sendEvent(
+                                EventViewModel.Event.VulkanCheck
+                            )
+                        },
                         submitError = submitError
                     )
                 }
@@ -460,12 +465,19 @@ private fun NavigationUI(
                     SavesManagerScreen(
                         mainScreenKey = mainScreenKey,
                         versionsScreenKey = versionsScreenKey,
-                        launchGameViewModel = launchGameViewModel,
                         version = version,
                         backToMainScreen = backToMainScreen,
                         swapToDownload = {
                             backScreenViewModel.navigateToDownload(
                                 targetScreen = backScreenViewModel.downloadSavesScreen
+                            )
+                        },
+                        onQuickPlay = { version, saveName ->
+                            eventViewModel.sendEvent(
+                                EventViewModel.Event.Launch.PlaySave(
+                                    version = version,
+                                    saveName = saveName
+                                )
                             )
                         },
                         submitError = submitError
@@ -512,8 +524,15 @@ private fun NavigationUI(
                     ServerListScreen(
                         mainScreenKey = mainScreenKey,
                         versionsScreenKey = versionsScreenKey,
-                        launchGameViewModel = launchGameViewModel,
                         version = version,
+                        onQuickPlay = { version, address ->
+                            eventViewModel.sendEvent(
+                                EventViewModel.Event.Launch.PlayServer(
+                                    version = version,
+                                    address = address
+                                )
+                            )
+                        },
                         backToMainScreen = backToMainScreen,
                     )
                 }
@@ -617,7 +636,7 @@ private fun UpdateLoaderOperation(
         }
         is UpdateLoaderOperation.Error -> {
             val th = operation.th
-            lError("Failed to download the game!", th)
+            Logger.error(TAG, "Failed to download the game!", th)
             val message = when (th) {
                 is HttpRequestTimeoutException, is SocketTimeoutException -> stringResource(R.string.error_timeout)
                 is UnknownHostException, is UnresolvedAddressException -> stringResource(R.string.error_network_unreachable)

@@ -24,12 +24,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.movtery.layer_controller.data.POSITION_RANGE
 import com.movtery.layer_controller.utils.snap.SnapMode
+import com.movtery.zalithlauncher.BuildKeys
+import com.movtery.zalithlauncher.game.download.assets.platform.Platform
 import com.movtery.zalithlauncher.game.path.GamePathManager
 import com.movtery.zalithlauncher.game.version.installed.GraphicsApi
-import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.setting.enums.AppLanguage
+import com.movtery.zalithlauncher.setting.enums.BackgroundBlur
 import com.movtery.zalithlauncher.setting.enums.DarkMode
 import com.movtery.zalithlauncher.setting.enums.GestureActionType
+import com.movtery.zalithlauncher.setting.enums.HomePageType
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
 import com.movtery.zalithlauncher.setting.enums.MouseControlMode
 import com.movtery.zalithlauncher.ui.control.HotbarRule
@@ -111,7 +114,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 版本自定义信息
      */
-    val versionCustomInfo = stringSetting("versionCustomInfo", "${InfoDistributor.LAUNCHER_IDENTIFIER}[zl_version]")
+    val versionCustomInfo = stringSetting("versionCustomInfo", "${BuildKeys.LAUNCHER_IDENTIFIER}[zl_version]")
 
     /**
      * 启动器的Java环境
@@ -386,6 +389,26 @@ object AllSettings : SettingsRegistry() {
     val videoBackgroundVolume = intSetting("videoBackgroundVolume", 0, 0..100)
 
     /**
+     * 启动器背景模糊效果
+     */
+    val backgroundBlur = intSetting("backgroundBlur", 0, 0..40)
+
+    /**
+     * 启动器背景模糊效果类型
+     */
+    val backgroundBlurType = enumSetting("backgroundBlurType", BackgroundBlur.Background)
+
+    /**
+     * 启动器主页类型
+     */
+    val homePageType = enumSetting("homePageType", HomePageType.Blank)
+
+    /**
+     * 启动器网络主页下载地址
+     */
+    val homePageURL = stringSetting("homePageURL", "")
+
+    /**
      * 启动器上次检查更新时，用户选择忽略的版本号
      */
     val lastIgnoredVersion = intSetting("lastIgnoredVersion", null)
@@ -476,6 +499,21 @@ object AllSettings : SettingsRegistry() {
      * 快捷栏高度百分比
      */
     val hotbarHeight = intSetting("hotbarHeight", 100, 0..1000)
+
+    /**
+     * 快捷栏双击与副手交换物品
+     */
+    val hotbarDoubleClick = boolSetting("hotbarDoubleClick", true)
+
+    /**
+     * 快捷栏长按丢弃所选物品
+     */
+    val hotbarLongClick = boolSetting("hotbarLongClick", true)
+
+    /**
+     * 快捷栏长按快捷栏触发延迟
+     */
+    val hotbarLongClickDelay = intSetting("hotbarLongClickDelay", 300, 100..1000)
 
     /**
      * 游戏内控制布局的整体不透明度
@@ -577,4 +615,29 @@ object AllSettings : SettingsRegistry() {
      * 是否在打开启动器时，根据特定的运行游戏次数，显示赞助支持弹窗
      */
     val showSponsorship = boolSetting("showSponsorship", true)
+
+    /**
+     * 搜索模组的初始搜索平台
+     */
+    val searchModPlatform = enumSetting("searchModPlatform", Platform.MODRINTH)
+
+    /**
+     * 搜索整合包的初始搜索平台
+     */
+    val searchModpackPlatform = enumSetting("searchModpackPlatform", Platform.MODRINTH)
+
+    /**
+     * 搜索资源包的初始搜索平台
+     */
+    val searchResourcePackPlatform = enumSetting("searchResourcePackPlatform", Platform.MODRINTH)
+
+    /**
+     * 搜索光影的初始搜索平台
+     */
+    val searchShadersPlatform = enumSetting("searchShadersPlatform", Platform.MODRINTH)
+
+    /**
+     * 启动 MC26.2+ 时，自动检查 Vulkan
+     */
+    val autoVulkanChecker = boolSetting("autoVulkanChecker", true)
 }

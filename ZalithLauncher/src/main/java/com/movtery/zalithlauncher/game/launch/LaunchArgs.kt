@@ -20,6 +20,7 @@ package com.movtery.zalithlauncher.game.launch
 
 import androidx.collection.ArrayMap
 import com.movtery.zalithlauncher.BuildConfig
+import com.movtery.zalithlauncher.BuildKeys
 import com.movtery.zalithlauncher.bridge.LoggerBridge
 import com.movtery.zalithlauncher.game.account.Account
 import com.movtery.zalithlauncher.game.account.isAuthServerAccount
@@ -36,14 +37,11 @@ import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.game.version.installed.VersionInfo
 import com.movtery.zalithlauncher.game.version.installed.getGameManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.GameManifest
-import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.path.LibPath
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.ui.screens.content.elements.QuickPlay
 import com.movtery.zalithlauncher.utils.file.child
-import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
-import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
-import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
+import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.ServerAddress
 import com.movtery.zalithlauncher.utils.string.insertJSONValueList
 import com.movtery.zalithlauncher.utils.string.isEmptyOrBlank
@@ -52,12 +50,15 @@ import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
 import com.movtery.zalithlauncher.utils.string.toUnicodeEscaped
 import java.io.File
 
+private const val TAG = "LaunchArgs"
+
 class LaunchArgs(
     private val runtimeLibraryPath: String,
     private val account: Account,
     private val offlineServer: OfflineYggdrasilServer,
     private val gameDirPath: File,
     private val version: Version,
+    private val clientJar: File,
     private val gameManifest: GameManifest,
     private val runtime: Runtime,
     private val readAssetsFile: (path: String) -> String,
@@ -96,7 +97,7 @@ class LaunchArgs(
                         } else {
                             val msg = "Quick Play for singleplayer is not supported and has been skipped."
                             LoggerBridge.append(msg)
-                            lWarning(msg)
+                            Logger.warning(TAG, msg)
                         }
                     }
                     is QuickPlay.Server -> {
@@ -128,7 +129,7 @@ class LaunchArgs(
         }.onFailure {
             val msg = "Unable to resolve the server address: $address. The automatic server join feature is unavailable."
             LoggerBridge.append(msg)
-            lWarning(msg, it)
+            Logger.warning(TAG, msg, it)
         }.getOrNull()?.let { parsed ->
             val args = if (quickPlay.isQuickPlayMultiplayer) {
                 val port = if (parsed.port < 0) {
@@ -167,14 +168,14 @@ class LaunchArgs(
                 offlineServer.getPort()?.let { port ->
                     val msg = "Using offline Yggdrasil server on port $port"
                     LoggerBridge.append(msg)
-                    lInfo(msg)
+                    Logger.info(TAG, msg)
                     argsList.add("-javaagent:${LibPath.AUTHLIB_INJECTOR.absolutePath}=http://localhost:$port")
                     argsList.add("-Dauthlibinjector.side=client")
                 } ?: run {
                     //无法获取端口号，说明服务器未成功启动
                     val msg = "Failed to start offline Yggdrasil server!"
                     LoggerBridge.append(msg)
-                    lWarning(msg)
+                    Logger.warning(TAG, msg)
                     //本次启动将被忽略，为避免浪费性能，关停服务器
                     offlineServer.stop()
                 }
@@ -202,17 +203,19 @@ class LaunchArgs(
                 }
                 configFilePath.writeText(content)
             }.onFailure {
-                lWarning("Failed to write fallback Log4j configuration autonomously!", it)
+                Logger.warning(TAG, "Failed to write fallback Log4j configuration autonomously!", it)
             }
         }
         argsList.add("-Dlog4j.configurationFile=${configFilePath.absolutePath}")
-        argsList.add("-Dminecraft.client.jar=${version.getClientJar().absolutePath}")
+        argsList.add("-Dminecraft.client.jar=${clientJar.absolutePath}")
+        argsList.add("-Dminecraft.launcher.brand=${BuildKeys.LAUNCHER_NAME}")
+        argsList.add("-Dminecraft.launcher.version=${BuildConfig.VERSION_NAME}")
 
         return argsList
     }
 
     private fun getMinecraftJVMArgs(): Array<String> {
-        val gameManifest1 = getGameManifest(version, true)
+        val gameManifest1 = getGameManifest(version, skipInheriting = true)
 
 //        // Parse Forge 1.17+ additional JVM Arguments
 //        if (versionInfo.inheritsFrom == null || versionInfo.arguments == null || versionInfo.arguments.jvm == null) {
@@ -271,22 +274,18 @@ class LaunchArgs(
      */
     private fun generateLaunchClassPath(gameManifest: GameManifest): String {
         val classpathList = mutableListOf<String>()
-
         val classpath: Array<String> = generateLibClasspath(gameManifest)
-
-        val clientClass = version.getClientJar()
-        val clientClasspath: String = clientClass.absolutePath
 
         for (jarFile in classpath) {
             val jarFileObj = File(jarFile)
             if (!jarFileObj.exists()) {
-                lDebug("Ignored non-exists file: $jarFile")
+                Logger.debug(TAG, "Ignored non-exists file: $jarFile")
                 continue
             }
             classpathList.add(jarFile)
         }
-        if (clientClass.exists()) {
-            classpathList.add(clientClasspath)
+        if (clientJar.exists()) {
+            classpathList.add(clientJar.absolutePath)
         }
 
         return classpathList.joinToString(":")
@@ -300,14 +299,26 @@ class LaunchArgs(
         val libs = LinkedHashMap<GameManifest.Library, String>()
 
         for (libItem in gameManifest.libraries) {
-            if (!(GameManifest.Rule.checkRules(libItem.rules) && !libItem.isNative)) continue
-            val path = libItem.progressLibrary() ?: continue
+            if (!GameManifest.Rule.checkRules(libItem.rules)) {
+                Logger.debug(TAG, "Library ignored due to unmatched rules: ${libItem.name}")
+                continue
+            }
+            if (libItem.isNative) {
+                Logger.debug(TAG, "Library ignored because it is a native library: ${libItem.name}")
+                continue
+            }
+            val path = libItem.progressLibrary() ?: run {
+                Logger.debug(TAG, "Library ignored due to library filtering: ${libItem.name}")
+                continue
+            }
             with(libSortFix) {
                 libs.insertLib(libItem, getLibrariesHome() + "/" + path)
             }
         }
+
         return libs.values.toTypedArray<String>()
     }
+
 
     /**
      * @return 库相对路径
@@ -321,7 +332,7 @@ class LaunchArgs(
         val versionParts = versionSegment.split(".")
 
         getLibraryReplacement(name, versionParts)?.let { replacement ->
-            lDebug("Library ${this.name} has been changed to version ${replacement.newName.split(":").last()}")
+            Logger.debug(TAG, "Library ${this.name} has been changed to version ${replacement.newName.split(":").last()}")
             path = replacement.newPath
         }
 
@@ -341,7 +352,7 @@ class LaunchArgs(
         varArgMap["game_directory"] = gameDirPath.absolutePath
         varArgMap["user_properties"] = "{}"
         varArgMap["user_type"] = "msa"
-        varArgMap["version_name"] = version.getVersionInfo()!!.minecraftVersion
+        varArgMap["version_name"] = gameManifest.id
 
         setLauncherInfo(varArgMap)
 
@@ -360,7 +371,7 @@ class LaunchArgs(
     }
 
     private fun setLauncherInfo(verArgMap: MutableMap<String, String>) {
-        verArgMap["launcher_name"] = InfoDistributor.LAUNCHER_NAME
+        verArgMap["launcher_name"] = BuildKeys.LAUNCHER_NAME
         verArgMap["launcher_version"] = BuildConfig.VERSION_NAME
         verArgMap["version_type"] = version.getCustomInfo()
             .takeIf { it.isNotEmptyOrBlank() }
