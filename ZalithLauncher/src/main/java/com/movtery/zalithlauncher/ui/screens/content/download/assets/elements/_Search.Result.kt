@@ -418,6 +418,7 @@ private fun ResultItemLayout(
     platform: Platform,
     title: String,
     description: String,
+    classes: PlatformClasses? = null,
     iconUrl: String? = null,
     author: String? = null,
     downloads: Long = 0L,
@@ -523,28 +524,40 @@ private fun ResultItemLayout(
                     }
                 }
 
-                //标签栏
                 Row(
-                    modifier = Modifier
-                        .basicMarquee(Int.MAX_VALUE)
-                        .alpha(0.7f),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    modloaders?.let {
-                        it.forEach { modloader ->
-                            Text(
-                                text = modloader.getDisplayName(),
-                                style = MaterialTheme.typography.labelSmall
-                            )
+                    //标签栏
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .basicMarquee(Int.MAX_VALUE)
+                            .alpha(0.7f),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        modloaders?.let {
+                            it.forEach { modloader ->
+                                Text(
+                                    text = modloader.getDisplayName(),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
+                        categories?.let {
+                            it.forEach { category ->
+                                Text(
+                                    text = stringResource(category.getDisplayName()),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
                         }
                     }
-                    categories?.let {
-                        it.forEach { category ->
-                            Text(
-                                text = stringResource(category.getDisplayName()),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
+
+                    //资源的类别
+                    if (classes != null) {
+                        ClassesIdentifier(classes = classes)
                     }
                 }
             }
