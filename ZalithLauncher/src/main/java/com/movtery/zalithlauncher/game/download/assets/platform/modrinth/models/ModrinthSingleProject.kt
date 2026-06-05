@@ -271,6 +271,7 @@ class ModrinthSingleProject(
     }
 
     override fun checkClasses() {
+        //fixme: 插件类、数据包类项目被标为模组类别
         if (projectType.mapModrinthType() == null) throw UnsupportedClassesException(projectType)
     }
 
