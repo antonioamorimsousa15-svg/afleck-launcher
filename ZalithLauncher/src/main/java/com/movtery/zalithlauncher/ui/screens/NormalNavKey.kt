@@ -179,7 +179,9 @@ sealed interface NormalNavKey : TitledNavKey {
     /** 搜索光影包屏幕 */
     @Serializable data object SearchShaders : NormalNavKey
     /** 搜索ID屏幕 */
-    @Serializable data object SearchId : NormalNavKey
+    @Serializable data object SearchId : NormalNavKey {
+        override val title: Int = R.string.download_category_by_id
+    }
 
     /** 下载资源屏幕 */
     @Serializable data class DownloadAssets(
