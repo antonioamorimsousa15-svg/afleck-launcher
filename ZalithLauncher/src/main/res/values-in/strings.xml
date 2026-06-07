@@ -1234,4 +1234,5 @@
     <string name="download_assets_id_tip">Cari project berdasarkan ID</string>
     <string name="download_assets_id_not_found">Project tidak ditemukan!</string>
     <string name="download_assets_id_unsupported">Project tidak didukung!</string>
+    <string name="settings_launcher_color_theme_style">Gaya Palet</string>
 </resources>
