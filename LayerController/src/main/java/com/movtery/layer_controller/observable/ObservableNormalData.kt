@@ -50,6 +50,12 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     var isPenetrable by mutableStateOf(data.isPenetrable)
     var isToggleable by mutableStateOf(data.isToggleable)
 
+    override val behavior: InteractionBehavior
+        get() = InteractionBehavior.from(
+            isSwipple = isSwipple,
+            isToggleable = isToggleable
+        )
+
     /**
      * 当前是否处于按下状态
      */
@@ -63,11 +69,12 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
         eventHandler: EventHandler,
         allLayers: List<ObservableControlLayer>
     ) {
-        if (isToggleable) {
-            isPressed = !isPressed
-        } else {
-            if (isPressed) return
-            isPressed = true
+        when (behavior) {
+            is InteractionBehavior.Toggle -> isPressed = !isPressed
+            else -> {
+                if (isPressed) return
+                isPressed = true
+            }
         }
         eventHandler.onKeyPressed(clickEvents, isPressed) { event ->
             eventHandler.onSwitchLayer(
@@ -142,34 +149,25 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
         if (activeWidgets.isEmpty()) {
             //新的按下事件
             addThis()
-            if (!isPenetrable) {
-                consumeEvent(true)
-            } else {
-                consumeEvent(false)
-            }
+            consumeEvent(!isPenetrable)
             pressStart(eventHandler, allLayers)
-        } else if (this !in activeWidgets && isSwipple && !isToggleable) {
-            //滑动到其他按钮时的处理
-            //可切换控件不能被滑动触发
-            //如果有活跃的可切换控件，不允许滑动触发其他控件
-            if (activeWidgets.none { it is ObservableNormalData && it.isToggleable }) {
+        } else if (this !in activeWidgets && behavior.canBeSwipedTo) {
+            //滑动联动
+            //该控件允许被滑入，且活跃控件中无阻止滑动链的类型
+            if (activeWidgets.none { it.behavior.blocksSwipeChain }) {
                 addThis()
                 pressStart(eventHandler, allLayers)
             }
         }
     }
 
-    override fun isReleaseOnOutOfBounds(): Boolean {
-        //可切换控件不允许通过移出边界释放，防止滑动触发其他控件
-        return isSwipple && !isToggleable
-    }
+    override fun isReleaseOnOutOfBounds(): Boolean = behavior.releaseOnOutOfBounds
 
     override fun onPointerBackInBounds(
         eventHandler: EventHandler,
         allLayers: List<ObservableControlLayer>
     ) {
-        //可切换控件不允许通过滑动触发回边界
-        if (isSwipple && !isToggleable) {
+        if (behavior.releaseOnOutOfBounds) {
             pressStart(eventHandler, allLayers)
         }
     }
@@ -178,7 +176,7 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
         eventHandler: EventHandler,
         allLayers: List<ObservableControlLayer>
     ) {
-        if (isToggleable || !isPressed) return
+        if (behavior is InteractionBehavior.Toggle || !isPressed) return
         isPressed = false
         eventHandler.onKeyPressed(clickEvents, isPressed)
     }

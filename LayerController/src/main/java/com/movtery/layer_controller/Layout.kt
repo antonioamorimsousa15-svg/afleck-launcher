@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -55,8 +54,9 @@ import com.movtery.layer_controller.layout.TextButton
 import com.movtery.layer_controller.observable.ObservableButtonStyle
 import com.movtery.layer_controller.observable.ObservableControlLayer
 import com.movtery.layer_controller.observable.ObservableControlLayout
-import com.movtery.layer_controller.observable.ObservableNormalData
 import com.movtery.layer_controller.observable.ObservableWidget
+import com.movtery.layer_controller.observable.TouchProcessor
+import com.movtery.layer_controller.observable.TouchSession
 import com.movtery.layer_controller.utils.getWidgetPosition
 
 /**
@@ -144,10 +144,6 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
     val reversedLayers = remember(layers) { layers.reversed() }
     val styles by observedLayout.styles.collectAsStateWithLifecycle()
 
-    val allActiveWidgets = remember { mutableStateMapOf<PointerId, List<ObservableWidget>>() }
-    //fix: 记录因可滑动控件移出边界后进入"滑动链"的指针，
-    //持久化到 set 中，避免跨帧时状态丢失
-    val swippleChainPointers = remember { mutableSetOf<PointerId>() }
     val currentCheckOccupiedPointers by rememberUpdatedState(checkOccupiedPointers)
     val currentIsCursorGrabbing by rememberUpdatedState(isCursorGrabbing)
     val currentHideLayerWhen by rememberUpdatedState(hideLayerWhen)
@@ -162,6 +158,14 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
         }
     }
 
+    //触控管线
+    val touchSession = remember { TouchSession() }
+    val touchProcessor = remember(screenSize) {
+        TouchProcessor(eventHandler) { widget ->
+            getWidgetPosition(widget, widget.internalRenderSize, screenSize)
+        }
+    }
+
     Box(
         modifier = modifier
             .pointerInput(reversedLayers, hideLayerWhen) {
@@ -170,168 +174,36 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                         val event = awaitPointerEvent(pass = PointerEventPass.Initial)
 
                         event.changes.forEach { change ->
-                            val position = change.position
                             val pointerId = change.id
-                            val isPressed = change.pressed
-
-                            //抬起时，总是尝试释放该指针下活跃的按钮
-                            //避免子级占用了指针后，导致按钮状态无法被释放
-                            if (!isPressed) {
-                                swippleChainPointers.remove(pointerId)
-                                allActiveWidgets.remove(pointerId)?.forEach { widget ->
+                            //手指抬起，清理该指针所有状态
+                            if (!change.pressed) {
+                                touchSession.endPointer(pointerId).forEach { widget ->
+                                    //释放该指针事件
                                     widget.onReleaseEvent(eventHandler, reversedLayers)
                                 }
                                 return@forEach
                             }
 
-                            if (
-                                change.isConsumed ||
-                                //不处理被子级占用的指针
-                                currentCheckOccupiedPointers(pointerId)
-                            ) {
-                                return@forEach
+                            if (change.isConsumed || currentCheckOccupiedPointers(pointerId)) {
+                                return@forEach //跳过已消费或被占用的指针
                             }
 
-                            //在可见控件层中，收集所有可见的按钮
-                            val visibleWidgets: List<ObservableWidget> = layers //使用原始控件层顺序，保证触摸逻辑正常
-                                .filter { layer ->
-                                    checkLayerVisibility(
-                                        layer = layer,
-                                        hideLayerWhen = currentHideLayerWhen,
-                                        isUsingJoystick = isUsingJoystick,
-                                        isCursorGrabbing = currentIsCursorGrabbing,
-                                        visibilityType = layer.visibilityType
-                                    )
-                                }
-                                .flatMap { layer ->
-                                    //顶向下的顺序影响控件层的处理优先级
-                                    layer.normalButtons.value.reversed()
-                                }
+                            //收集可见控件
+                            val visibleWidgets = collectVisibleWidgets(
+                                layers = layers,
+                                hideLayerWhen = currentHideLayerWhen,
+                                isUsingJoystick = isUsingJoystick,
+                                isCursorGrabbing = currentIsCursorGrabbing,
+                            )
 
-                            //查找当前指针在哪些按钮上
-                            val targetWidgets = visibleWidgets
-                                .filter { widget ->
-                                    if (!widget.canTouch()) return@filter false
-
-                                    if (!checkVisibility(currentIsCursorGrabbing, widget.onCheckVisibilityType())) {
-                                        //隐藏了，不响应事件
-                                        return@filter false
-                                    }
-
-                                    val size = widget.internalRenderSize
-                                    val offset = getWidgetPosition(widget, size, screenSize)
-
-                                    val x = position.x
-                                    val y = position.y
-                                    x >= offset.x && x <= offset.x + size.width &&
-                                            y >= offset.y && y <= offset.y + size.height
-                                }.let { list ->
-                                    if (list.isEmpty()) return@let list
-
-                                    val firstDeepWidget = list.firstOrNull { it.supportsDeepTouchDetection() }
-
-                                    when {
-                                        firstDeepWidget == null -> list
-                                        else -> {
-                                            val topIndex = list.indexOf(firstDeepWidget)
-                                            list.subList(0, topIndex + 1).filter { widget ->
-                                                !widget.canProcess()
-                                            }
-                                        }
-                                    }
-                                }
-
-                            var activeWidgets = allActiveWidgets[pointerId] ?: emptyList()
-                            val activeWidgetsBeforeRelease = activeWidgets.toList()
-
-                            //检查是否移出边界
-                            if (activeWidgets.isNotEmpty()) {
-                                val backInBounds = mutableListOf<ObservableWidget>()
-                                val releasedWidgets = mutableListOf<ObservableWidget>()
-                                for (widget in activeWidgets) {
-                                    //检查组件是否可以响应移除边界即松开
-                                    if (!widget.isReleaseOnOutOfBounds()) continue
-
-                                    val size = widget.internalRenderSize
-                                    val offset = getWidgetPosition(widget, size, screenSize)
-                                    val isOutOfBounds = position.x !in offset.x..(offset.x + size.width) ||
-                                            position.y !in offset.y..(offset.y + size.height)
-
-                                    if (isOutOfBounds) {
-                                        widget.onReleaseEvent(eventHandler, reversedLayers)
-                                        releasedWidgets.add(widget)
-                                    } else {
-                                        backInBounds.add(widget)
-                                    }
-                                }
-                                //fix: 移出边界时应移出组，否则滑动回已释放的按钮无法再次触发
-                                if (releasedWidgets.isNotEmpty()) {
-                                    activeWidgets = activeWidgets - releasedWidgets
-                                    allActiveWidgets[pointerId] = activeWidgets
-                                }
-                                //fix: 应该在抬起事件全部处理完成后再处理 #941
-                                if (backInBounds.isNotEmpty()) {
-                                    for (widget in backInBounds) {
-                                        widget.onPointerBackInBounds(eventHandler, reversedLayers)
-                                    }
-                                }
-                            }
-
-                            //fix: 当可滑动控件移出边界被释放，且activeWidgets被清空时，
-                            //标记该指针进入"滑动链"，持久化到set中，杜绝跨帧状态丢失。
-                            //此后该指针下不再允许触发非可滑动的控件
-                            if (activeWidgets.isEmpty() &&
-                                activeWidgetsBeforeRelease.any {
-                                    it is ObservableNormalData && it.isSwipple
-                                }
-                            ) {
-                                swippleChainPointers.add(pointerId)
-                            }
-
-                            //当手指回到任何可滑动控件上，可退出滑动链
-                            if (activeWidgets.isNotEmpty() &&
-                                pointerId in swippleChainPointers
-                            ) {
-                                swippleChainPointers.remove(pointerId)
-                            }
-
-                            when {
-                                targetWidgets.isEmpty() -> {}
-                                else -> {
-                                    for (targetWidget in targetWidgets) {
-                                        if (targetWidget.canProcess()) {
-                                            return@forEach //拒绝处理该事件
-                                        }
-
-                                        //fix: 在滑动链中，只允许触发可滑动且非可切换的控件
-                                        if (pointerId in swippleChainPointers &&
-                                            targetWidget is ObservableNormalData &&
-                                            (!targetWidget.isSwipple || targetWidget.isToggleable)
-                                        ) {
-                                            continue
-                                        }
-
-                                        targetWidget.onTouchEvent(
-                                            eventHandler = eventHandler,
-                                            allLayers = reversedLayers,
-                                            change = change,
-                                            activeWidgets = activeWidgets,
-                                            addThis = {
-                                                allActiveWidgets[pointerId] = activeWidgets + listOf(targetWidget)
-                                            },
-                                            consumeEvent = { value ->
-                                                if (value) {
-                                                    change.consume()
-                                                } else {
-                                                    //将指针标记为仅接受滑动处理
-                                                    //期望子级不对点击事件等进行处理
-                                                    markPointerAsMoveOnly(pointerId)
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            }
+                            touchProcessor.processFrame(
+                                session = touchSession,
+                                change = change,
+                                visibleWidgets = visibleWidgets,
+                                allLayers = reversedLayers,
+                                consumeEvent = { it.consume() },
+                                markPointerAsMoveOnly = markPointerAsMoveOnly,
+                            )
                         }
                     }
                 }
@@ -451,6 +323,38 @@ private fun ControlsRendererLayer(
             }
         }
     }
+}
+
+/**
+ * 收集所有可见控件层中的可触控控件
+ * 只做图层可见性、控件可见类型检查，命中和深度检测由 [TouchProcessor] 提供
+ */
+private fun collectVisibleWidgets(
+    layers: List<ObservableControlLayer>,
+    hideLayerWhen: HideLayerWhen,
+    isUsingJoystick: Boolean,
+    isCursorGrabbing: Boolean,
+): List<ObservableWidget> {
+    return layers
+        .filter { layer ->
+            checkLayerVisibility(
+                layer = layer,
+                hideLayerWhen = hideLayerWhen,
+                isUsingJoystick = isUsingJoystick,
+                isCursorGrabbing = isCursorGrabbing,
+                visibilityType = layer.visibilityType,
+            )
+        }
+        .flatMap { layer ->
+            //反转，从顶到底
+            layer.normalButtons.value.reversed()
+        }
+        .filter { widget ->
+            widget.canTouch() && checkVisibility(
+                isCursorGrabbing = isCursorGrabbing,
+                visibilityType = widget.onCheckVisibilityType()
+            )
+        }
 }
 
 private fun checkLayerVisibility(
