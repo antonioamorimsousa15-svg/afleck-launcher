@@ -130,6 +130,7 @@ import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.TitledNavKey
 import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.AssetsIcon
 import com.movtery.zalithlauncher.ui.screens.content.elements.ImportMultipleFileButton
+import com.movtery.zalithlauncher.ui.screens.content.elements.ModLoaderIcon
 import com.movtery.zalithlauncher.ui.screens.content.elements.SortByDropdownMenu
 import com.movtery.zalithlauncher.ui.screens.content.elements.SortByEnum
 import com.movtery.zalithlauncher.ui.screens.content.elements.rememberMultipleUriImportTaskBuilder
@@ -1323,12 +1324,22 @@ private fun ModIcon(
 
         val projectInfo = mod.projectInfo
         if (projectInfo == null) {
-            ByteArrayIcon(
-                modifier = Modifier.size(iconSize),
-                triggerRefresh = mod,
-                icon = mod.localMod.icon,
-                colorFilter = ColorFilter.colorMatrix(colorMatrix)
-            )
+            if (mod.localMod.icon == null) {
+                ModLoaderIcon(
+                    modifier = Modifier.size(iconSize),
+                    modloader = mod.localMod.loader,
+                    defaultIcon = R.drawable.ic_unknown_pack,
+                    colorFilter = ColorFilter.colorMatrix(colorMatrix),
+
+                )
+            } else {
+                ByteArrayIcon(
+                    modifier = Modifier.size(iconSize),
+                    triggerRefresh = mod,
+                    icon = mod.localMod.icon,
+                    colorFilter = ColorFilter.colorMatrix(colorMatrix),
+                )
+            }
         } else {
             AssetsIcon(
                 iconUrl = projectInfo.iconUrl,
