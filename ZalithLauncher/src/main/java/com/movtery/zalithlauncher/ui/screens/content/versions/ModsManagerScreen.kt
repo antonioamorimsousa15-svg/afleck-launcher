@@ -204,6 +204,12 @@ private class ModsManageViewModel(
     val selectedMods = mutableStateListOf<RemoteMod>()
 
     /**
+     * 是否可以更新选中的模组
+     */
+    var canUpdate by mutableStateOf(false)
+        private set
+
+    /**
      * 删除所有已选择模组的操作流程
      */
     var deleteAllOperation by mutableStateOf<DeleteAllOperation>(DeleteAllOperation.None)
@@ -237,6 +243,8 @@ private class ModsManageViewModel(
             }
             modsState = LoadingState.Loading
             selectedMods.clear() //清空所有已选择的模组
+            canUpdate = false
+
             if (checkCount) modsCount.checkDir()
             try {
                 allMods = modReader.readAllForRemote()
@@ -331,12 +339,19 @@ private class ModsManageViewModel(
                 selectedMods.add(mod)
             }
         }
+        checkCanUpdate()
     }
 
     fun clearSelected() {
         filteredMods?.let {
             selectedMods.removeAll(it)
         }
+        checkCanUpdate()
+    }
+
+    fun checkCanUpdate() {
+        // 寻找列表中是否存在能够检查远端的模组
+        canUpdate = selectedMods.any { it.localMod.checkRemote }
     }
 
     /** 在ViewModel的生命周期协程内调用 */
@@ -696,6 +711,7 @@ fun ModsManagerScreen(
                                 }
                             },
                             isModsSelected = viewModel.selectedMods.isNotEmpty(),
+                            canUpdate = viewModel.canUpdate,
                             onSelectAll = {
                                 viewModel.selectAllMods()
                             },
@@ -716,9 +732,11 @@ fun ModsManagerScreen(
                             selectedMods = viewModel.selectedMods,
                             removeFromSelected = { mod ->
                                 viewModel.selectedMods.remove(mod)
+                                viewModel.checkCanUpdate()
                             },
                             addToSelected = { mod ->
                                 viewModel.selectedMods.add(mod)
+                                viewModel.checkCanUpdate()
                             },
                             onLoad = { mod ->
                                 viewModel.loadMod(mod)
@@ -787,6 +805,7 @@ private fun ModsActionsHeader(
     modsDir: File,
     onDeleteAll: () -> Unit,
     isModsSelected: Boolean,
+    canUpdate: Boolean,
     onSelectAll: () -> Unit,
     onClearModsSelected: () -> Unit,
     swapToDownload: () -> Unit,
@@ -898,7 +917,7 @@ private fun ModsActionsHeader(
                     visible = isModsSelected
                 ) {
                     Row {
-                        if (hasModLoader) {
+                        if (hasModLoader && canUpdate) {
                             IconButton(
                                 onClick = onUpdateMods
                             ) {
