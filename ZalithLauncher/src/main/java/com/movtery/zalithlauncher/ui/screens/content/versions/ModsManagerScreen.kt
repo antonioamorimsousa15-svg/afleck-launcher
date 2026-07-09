@@ -468,7 +468,6 @@ private class ModsUpdaterViewModel(
     var modsUpdater by mutableStateOf<ModUpdater?>(null)
 
     fun update(
-        context: Context,
         mods: List<RemoteMod>,
         refreshMods: () -> Unit,
         showToast: (AndroidStringText, duration: Int) -> Unit,
@@ -479,7 +478,6 @@ private class ModsUpdaterViewModel(
         val modLoader = version.getVersionInfo()!!.loaderInfo!!.loader
 
         modsUpdater = ModUpdater(
-            context = context,
             mods = mods,
             modsDir = modsDir,
             minecraft = minecraftVer,
@@ -607,7 +605,6 @@ fun ModsManagerScreen(
             modsUpdater = updaterViewModel.modsUpdater,
             onUpdate = { mods ->
                 updaterViewModel.update(
-                    context = context,
                     mods = mods,
                     refreshMods = {
                         //刷新模组

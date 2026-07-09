@@ -66,7 +66,7 @@ class ModrinthPackExporter: AbstractExporter(
         if (info.packModrinth) {
             addTask(
                 id = "ModrinthPackExporter.FetchRemote",
-                title = context.getString(R.string.versions_export_task_fetch_remote),
+                title = androidText(R.string.versions_export_task_fetch_remote),
                 icon = R.drawable.ic_search
             ) { task ->
                 //获取远端数据
@@ -87,7 +87,7 @@ class ModrinthPackExporter: AbstractExporter(
 
         addTask(
             id = "ModrinthPackExporter.PackManifest",
-            title = context.getString(R.string.versions_export_task_pack_manifest),
+            title = androidText(R.string.versions_export_task_pack_manifest),
             icon = R.drawable.ic_build_filled
         ) {
             val gameName = info.gamePath.name

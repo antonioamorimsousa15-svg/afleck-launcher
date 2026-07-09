@@ -18,7 +18,6 @@
 
 package com.movtery.zalithlauncher.game.version.installed.cleanup
 
-import android.content.Context
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskFlowExecutor
@@ -42,7 +41,6 @@ import org.apache.commons.io.FileUtils
 import java.io.File
 
 class GameAssetCleaner(
-    private val context: Context,
     scope: CoroutineScope
 ) {
     private val taskExecutor = TaskFlowExecutor(scope)
@@ -128,7 +126,7 @@ class GameAssetCleaner(
                 //获取全部文件
                 addTask(
                     id = "GameAssetCleaner.CollectFiles",
-                    title = context.getString(R.string.versions_manage_cleanup_collect_files),
+                    title = androidText(R.string.versions_manage_cleanup_collect_files),
                     icon = R.drawable.ic_article_outlined,
                 ) { task ->
                     task.updateProgress(-1f)
@@ -140,7 +138,7 @@ class GameAssetCleaner(
                 //收集所有版本所需的游戏文件
                 addTask(
                     id = "GameAssetCleaner.CollectGameFiles",
-                    title = context.getString(R.string.versions_manage_cleanup_collect_game_files),
+                    title = androidText(R.string.versions_manage_cleanup_collect_game_files),
                     icon = R.drawable.ic_article_outlined
                 ) { task ->
                     task.updateProgress(-1f)
@@ -180,7 +178,7 @@ class GameAssetCleaner(
                 //对比出无用的文件
                 addTask(
                     id = "GameAssetCleaner.CompareFiles",
-                    title = context.getString(R.string.versions_manage_cleanup_compare_files),
+                    title = androidText(R.string.versions_manage_cleanup_compare_files),
                     icon = R.drawable.ic_build_outlined
                 ) { task ->
                     task.updateProgress(-1f)
@@ -194,7 +192,7 @@ class GameAssetCleaner(
                 //清理文件
                 addTask(
                     id = "GameAssetsCleaner.Cleanup",
-                    title = context.getString(R.string.versions_manage_cleanup_cleanup),
+                    title = androidText(R.string.versions_manage_cleanup_cleanup),
                     icon = R.drawable.ic_auto_delete_outlined,
                     dispatcher = Dispatchers.IO
                 ) { task ->

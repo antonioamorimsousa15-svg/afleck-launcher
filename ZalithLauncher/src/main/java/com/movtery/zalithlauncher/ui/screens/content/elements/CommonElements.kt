@@ -409,7 +409,7 @@ fun TitleTaskFlowDialog(
 @Composable
 private fun InstallingTaskItem(
     modifier: Modifier = Modifier,
-    title: String,
+    title: AndroidStringText,
     @DrawableRes
     runningIcon: Int? = null,
     task: Task
@@ -435,7 +435,7 @@ private fun InstallingTaskItem(
         )
 
         Column(modifier = modifier.weight(1f)) {
-            Text(
+            AndroidStringText(
                 text = title,
                 style = MaterialTheme.typography.labelLarge
             )

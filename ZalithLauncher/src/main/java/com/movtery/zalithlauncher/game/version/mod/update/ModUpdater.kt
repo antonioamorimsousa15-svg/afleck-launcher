@@ -18,7 +18,6 @@
 
 package com.movtery.zalithlauncher.game.version.mod.update
 
-import android.content.Context
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskFlowExecutor
@@ -56,7 +55,6 @@ private const val TAG = "ModUpdater"
  *                              如果用户觉得没有问题，须返回`true`；否则返回`false`，安装会取消
  */
 class ModUpdater(
-    private val context: Context,
     private val mods: List<RemoteMod>,
     private val modsDir: File,
     private val minecraft: String,
@@ -136,7 +134,7 @@ class ModUpdater(
                 //清理缓存
                 addTask(
                     id = "ModUpdater.ClearTemp",
-                    title = context.getString(R.string.download_install_clear_temp),
+                    title = androidText(R.string.download_install_clear_temp),
                     icon = R.drawable.ic_auto_delete_outlined
                 ) {
                     clearTempModUpdaterDir()
@@ -147,7 +145,7 @@ class ModUpdater(
                 //过滤模组数据
                 addTask(
                     id = "ModUpdater.Filter",
-                    title = context.getString(R.string.mods_update_task_filter),
+                    title = androidText(R.string.mods_update_task_filter),
                     icon = R.drawable.ic_filter_alt_outlined
                 ) { task ->
                     val totalSize = mods.size
@@ -199,7 +197,7 @@ class ModUpdater(
                 // 检查更新
                 addTask(
                     id = "ModUpdater.CheckUpdate",
-                    title = context.getString(R.string.mods_update_task_check_update),
+                    title = androidText(R.string.mods_update_task_check_update),
                     icon = R.drawable.ic_list_alt_check_outlined
                 ) { task ->
                     // 最大并发数为 5
@@ -237,7 +235,7 @@ class ModUpdater(
                 //等待用户确认模组更新
                 addTask(
                     id = "ModUpdater.WaitForUser",
-                    title = context.getString(R.string.mods_update_task_wait_for_user),
+                    title = androidText(R.string.mods_update_task_wait_for_user),
                     icon = R.drawable.ic_schedule_outlined
                 ) {
                     val finalList = waitForUserConfirm(allModsUpdate).toFinalList()
@@ -253,7 +251,7 @@ class ModUpdater(
                 //下载新版本模组
                 addTask(
                     id = "ModUpdater.UpdateMod",
-                    title = context.getString(R.string.mods_update_task_download)
+                    title = androidText(R.string.mods_update_task_download)
                 ) { task ->
                     val updater = ModVersionUpdater(
                         mods = finalModsUpdate.allNews(),
@@ -265,7 +263,7 @@ class ModUpdater(
                 //替换模组文件
                 addTask(
                     id = " ModUpdater.ReplaceMod",
-                    title = context.getString(R.string.mods_update_task_replace),
+                    title = androidText(R.string.mods_update_task_replace),
                     icon = R.drawable.ic_build_outlined
                 ) { task ->
                     val totalCount = finalModsUpdate.size
@@ -292,7 +290,7 @@ class ModUpdater(
                 //清理缓存
                 addTask(
                     id = "ModUpdater.ClearTempEnds",
-                    title = context.getString(R.string.download_install_clear_temp),
+                    title = androidText(R.string.download_install_clear_temp),
                     icon = R.drawable.ic_auto_delete_outlined
                 ) {
                     clearTempModUpdaterDir()

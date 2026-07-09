@@ -58,7 +58,7 @@ class CurseForgePackExporter: AbstractExporter(
         if (info.packCurseForge) {
             addTask(
                 id = "CurseForgePackExporter.FetchRemote",
-                title = context.getString(R.string.versions_export_task_fetch_remote),
+                title = androidText(R.string.versions_export_task_fetch_remote),
                 icon = R.drawable.ic_search
             ) { task ->
                 //获取远端数据
@@ -78,7 +78,7 @@ class CurseForgePackExporter: AbstractExporter(
 
         addTask(
             id = "CurseForgePackExporter.PackManifest",
-            title = context.getString(R.string.versions_export_task_pack_manifest),
+            title = androidText(R.string.versions_export_task_pack_manifest),
             icon = R.drawable.ic_build_filled
         ) {
             val gameName = info.gamePath.name
