@@ -33,6 +33,7 @@ import com.movtery.zalithlauncher.game.version.installed.VersionConfig
 import com.movtery.zalithlauncher.game.version.installed.VersionFolders
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.utils.file.copyDirectoryContents
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.downloadFileSuspend
@@ -185,7 +186,8 @@ class ModPackInstaller(
                         )
                     }
                     //下载icon图片
-                    task.updateProgress(-1f, null)
+                    task.updateProgress(-1f)
+                    task.updateMessage(null)
                     iconUrl?.let { iconUrl ->
                         downloadFileSuspend(
                             url = iconUrl,
@@ -319,7 +321,8 @@ class ModPackInstaller(
             }.save()
 
             //清理临时整合包目录
-            task.updateProgress(-1f, R.string.download_install_clear_temp)
+            task.updateProgress(-1f)
+            task.updateMessage(androidText(R.string.download_install_clear_temp))
             clearTempModPackDir()
         }
     )

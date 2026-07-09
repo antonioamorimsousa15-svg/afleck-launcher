@@ -57,6 +57,7 @@ import com.movtery.zalithlauncher.game.version.installed.VersionConfig
 import com.movtery.zalithlauncher.game.version.installed.VersionFolders
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.utils.file.copyDirectoryContents
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.downloadFromMirrorListSuspend
@@ -1030,7 +1031,8 @@ class GameInstaller(
             }
 
             //清除临时游戏目录
-            task.updateProgress(-1f, R.string.download_install_clear_temp)
+            task.updateProgress(-1f)
+            task.updateMessage(androidText(R.string.download_install_clear_temp))
             clearTempGameDir()
 
             onComplete()
@@ -1056,7 +1058,8 @@ class GameInstaller(
                 )
 
                 //清除临时游戏目录
-                task.updateProgress(-1f, R.string.download_install_clear_temp)
+                task.updateProgress(-1f)
+                task.updateMessage(androidText(R.string.download_install_clear_temp))
                 clearTempGameDir()
 
                 onComplete()

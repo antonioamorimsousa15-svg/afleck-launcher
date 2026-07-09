@@ -38,8 +38,10 @@ import com.movtery.zalithlauncher.game.account.microsoft.fetchDeviceCodeResponse
 import com.movtery.zalithlauncher.game.account.microsoft.getTokenResponse
 import com.movtery.zalithlauncher.game.account.microsoft.microsoftAuthAsync
 import com.movtery.zalithlauncher.game.account.microsoft.toLocal
-import com.movtery.zalithlauncher.ui.screens.content.elements.MicrosoftLoginOperation
 import com.movtery.zalithlauncher.path.URL_USER_AGENT
+import com.movtery.zalithlauncher.ui.AndroidStringText
+import com.movtery.zalithlauncher.ui.androidText
+import com.movtery.zalithlauncher.ui.screens.content.elements.MicrosoftLoginOperation
 import com.movtery.zalithlauncher.utils.copyText
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.toLocal
@@ -110,7 +112,8 @@ fun microsoftLogin(
         id = MICROSOFT_LOGGING_TASK,
         dispatcher = Dispatchers.IO,
         task = { task ->
-            task.updateProgress(-1f, R.string.account_microsoft_fetch_device_code)
+            task.updateProgress(-1f)
+            task.updateMessage(androidText(R.string.account_microsoft_fetch_device_code))
             val deviceCode = fetchDeviceCodeResponse(coroutineContext)
             copyText(COPY_LABEL_DEVICE_CODE, deviceCode.userCode, context, false)
             withContext(Dispatchers.Main) {
@@ -121,7 +124,8 @@ fun microsoftLogin(
                 ).show()
             }
             toWeb(deviceCode.verificationUrl)
-            task.updateProgress(-1f, R.string.account_microsoft_get_token, deviceCode.userCode)
+            task.updateProgress(-1f)
+            task.updateMessage(androidText(R.string.account_microsoft_get_token, deviceCode.userCode))
             val tokenResponse = getTokenResponse(deviceCode, coroutineContext) { time ->
                 (!checkIfInWebScreen()).also { exit ->
                     if (exit && time > 0) withContext(Dispatchers.Main) {
@@ -141,9 +145,10 @@ fun microsoftLogin(
                 tokenResponse.refreshToken,
                 tokenResponse.accessToken,
                 coroutineContext = coroutineContext,
-                updateProgress = task::updateProgress
+                updateProgress = task::updateProgress,
+                updateMessage = task::updateMessage,
             )
-            task.updateMessage(R.string.account_logging_in_saving)
+            task.updateMessage(androidText(R.string.account_logging_in_saving))
             account.downloadYggdrasil()
             AccountsManager.saveAccount(account)
         },
@@ -183,16 +188,35 @@ private suspend fun microsoftAuth(
     refreshToken: String,
     accessToken: String = "NULL",
     coroutineContext: CoroutineContext,
-    updateProgress: (Float, Int) -> Unit
+    updateProgress: (Float) -> Unit,
+    updateMessage: (AndroidStringText?) -> Unit,
 ): Account {
     return microsoftAuthAsync(authType, refreshToken, accessToken, coroutineContext) { asyncStatus ->
         when (asyncStatus) {
-            AsyncStatus.GETTING_ACCESS_TOKEN ->     updateProgress(0.25f, R.string.account_microsoft_getting_access_token)
-            AsyncStatus.GETTING_XBL_TOKEN ->        updateProgress(0.4f, R.string.account_microsoft_getting_xbl_token)
-            AsyncStatus.GETTING_XSTS_TOKEN ->       updateProgress(0.55f, R.string.account_microsoft_getting_xsts_token)
-            AsyncStatus.AUTHENTICATE_MINECRAFT ->   updateProgress(0.7f, R.string.account_microsoft_authenticate_minecraft)
-            AsyncStatus.VERIFY_GAME_OWNERSHIP ->    updateProgress(0.85f, R.string.account_microsoft_verify_game_ownership)
-            AsyncStatus.GETTING_PLAYER_PROFILE ->   updateProgress(1f, R.string.account_microsoft_getting_player_profile)
+            AsyncStatus.GETTING_ACCESS_TOKEN -> {
+                updateProgress(0.25f)
+                updateMessage(androidText(R.string.account_microsoft_getting_access_token))
+            }
+            AsyncStatus.GETTING_XBL_TOKEN -> {
+                updateProgress(0.4f)
+                updateMessage(androidText(R.string.account_microsoft_getting_xbl_token))
+            }
+            AsyncStatus.GETTING_XSTS_TOKEN -> {
+                updateProgress(0.55f)
+                updateMessage(androidText(R.string.account_microsoft_getting_xsts_token))
+            }
+            AsyncStatus.AUTHENTICATE_MINECRAFT -> {
+                updateProgress(0.7f)
+                updateMessage(androidText(R.string.account_microsoft_authenticate_minecraft))
+            }
+            AsyncStatus.VERIFY_GAME_OWNERSHIP -> {
+                updateProgress(0.85f)
+                updateMessage(androidText(R.string.account_microsoft_verify_game_ownership))
+            }
+            AsyncStatus.GETTING_PLAYER_PROFILE -> {
+                updateProgress(1f)
+                updateMessage(androidText(R.string.account_microsoft_getting_player_profile))
+            }
         }
     }
 }
@@ -229,7 +253,8 @@ suspend fun Account.refreshMicrosoft(
         refreshToken,
         accessToken,
         coroutineContext = coroutineContext,
-        updateProgress = task::updateProgress
+        updateProgress = task::updateProgress,
+        updateMessage = task::updateMessage,
     )
     apply {
         this.accessToken = newAcc.accessToken
@@ -311,7 +336,8 @@ fun addOtherServer(
 ) {
     val task = Task.runTask(
         task = { task ->
-            task.updateProgress(-1f, R.string.account_other_login_getting_full_url)
+            task.updateProgress(-1f)
+            task.updateMessage(androidText(R.string.account_other_login_getting_full_url))
             val isNide8 = isValidPassportId(serverUrl)
             val fullServerUrl = if (isNide8) {
                 //可能是一个统一通行证服务器ID
@@ -320,7 +346,8 @@ fun addOtherServer(
                 tryGetFullServerUrl(serverUrl)
             }
             ensureActive()
-            task.updateProgress(0.5f, R.string.account_other_login_getting_server_info)
+            task.updateProgress(0.5f)
+            task.updateMessage(androidText(R.string.account_other_login_getting_server_info))
             runCatching {
                 getAuthServeInfo(fullServerUrl)
             }.onFailure { th ->
@@ -339,9 +366,11 @@ fun addOtherServer(
                             meta.optJSONObject("links")?.optString("register") ?: ""
                         } else "https://login.mc-user.com:233/$serverUrl"
                     )
-                    task.updateProgress(0.8f, R.string.account_other_login_saving_server)
+                    task.updateProgress(0.8f)
+                    task.updateMessage(androidText(R.string.account_other_login_saving_server))
                     AccountsManager.saveAuthServer(server)
-                    task.updateProgress(1f, R.string.generic_done)
+                    task.updateProgress(1f)
+                    task.updateMessage(androidText(R.string.generic_done))
                 }
             }
         },

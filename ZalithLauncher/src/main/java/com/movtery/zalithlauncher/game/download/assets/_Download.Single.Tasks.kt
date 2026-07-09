@@ -26,6 +26,7 @@ import com.movtery.zalithlauncher.game.download.assets.platform.PlatformVersion
 import com.movtery.zalithlauncher.game.download.assets.platform.mcim.mapMCIMMirrorUrls
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.utils.file.ensureParentDirectory
 import com.movtery.zalithlauncher.utils.file.formatFileSize
 import com.movtery.zalithlauncher.utils.logging.Logger
@@ -67,7 +68,8 @@ fun downloadSingleForVersions(
         version = version,
         file = cacheFile,
         onDownloaded = { task ->
-            task.updateProgress(-1f, R.string.download_assets_install_progress_installing, version.platformFileName())
+            task.updateProgress(-1f)
+            task.updateMessage(androidText(R.string.download_assets_install_progress_installing, version.platformFileName()))
             versions.forEach { ver ->
                 val targetFolder = File(ver.getGameDir(), folder)
                 val targetFile = File(targetFolder, version.platformFileName())
@@ -127,11 +129,15 @@ private fun downloadSingleFile(
                 //更新下载任务进度
                 fun updateProgress() {
                     task.updateProgress(
-                        (downloadedSize.toDouble() / totalFileSize.toDouble()).toFloat(),
-                        R.string.download_assets_install_progress_downloading,
-                        version.platformFileName(),
-                        formatFileSize(downloadedSize),
-                        formatFileSize(totalFileSize),
+                        (downloadedSize.toDouble() / totalFileSize.toDouble()).toFloat()
+                    )
+                    task.updateMessage(
+                        androidText(
+                            R.string.download_assets_install_progress_downloading,
+                            version.platformFileName(),
+                            formatFileSize(downloadedSize),
+                            formatFileSize(totalFileSize),
+                        )
                     )
                 }
                 updateProgress()

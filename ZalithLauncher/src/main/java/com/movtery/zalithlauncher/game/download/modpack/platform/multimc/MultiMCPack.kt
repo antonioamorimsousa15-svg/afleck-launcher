@@ -32,6 +32,7 @@ import com.movtery.zalithlauncher.game.download.modpack.platform.AbstractPack
 import com.movtery.zalithlauncher.game.download.modpack.platform.PackPlatform
 import com.movtery.zalithlauncher.game.version.installed.VersionConfig
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.utils.file.copyDirectoryContents
 import com.movtery.zalithlauncher.utils.logging.Logger
 import kotlinx.coroutines.CoroutineScope
@@ -89,7 +90,7 @@ open class MultiMCPack(
                     //成功识别后，开始提取整合包游戏文件
                     val minecraftDir = File(root, ".minecraft")
                     if (minecraftDir.exists() && minecraftDir.isDirectory) {
-                        task.updateMessage(R.string.import_modpack_task_extract_files)
+                        task.updateMessage(androidText(R.string.import_modpack_task_extract_files))
                         copyDirectoryContents(
                             from = minecraftDir,
                             to = versionFolder,
@@ -210,7 +211,8 @@ open class MultiMCPack(
             }.save()
 
             //清理临时整合包目录
-            task.updateProgress(-1f, R.string.download_install_clear_temp)
+            task.updateProgress(-1f)
+            task.updateMessage(androidText(R.string.download_install_clear_temp))
             onClearTemp()
         }
     )

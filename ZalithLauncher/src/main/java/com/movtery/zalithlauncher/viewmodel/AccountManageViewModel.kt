@@ -57,6 +57,7 @@ import com.movtery.zalithlauncher.game.account.yggdrasil.getFile
 import com.movtery.zalithlauncher.game.account.yggdrasil.getPlayerProfile
 import com.movtery.zalithlauncher.game.account.yggdrasil.uploadSkin
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.screens.content.elements.AccountOperation
 import com.movtery.zalithlauncher.ui.screens.content.elements.AccountSkinOperation
 import com.movtery.zalithlauncher.ui.screens.content.elements.ChangeCape
@@ -507,14 +508,15 @@ class AccountManageViewModel @Inject constructor(
                 dispatcher = Dispatchers.IO,
                 task = { task ->
                     executeWithAuthorization(block = {
-                        task.updateProgress(-1f, R.string.account_change_skin_uploading)
+                        task.updateProgress(-1f)
+                        task.updateMessage(androidText(R.string.account_change_skin_uploading))
                         uploadSkin(MINECRAFT_SERVICES_URL, account.accessToken, skinFile, skinModel)
                     }, onRefreshRequest = {
                         account.refreshMicrosoft(task = task, coroutineContext = coroutineContext)
                         AccountsManager.suspendSaveAccount(account)
                     })
 
-                    task.updateMessage(R.string.account_change_skin_update_local)
+                    task.updateMessage(androidText(R.string.account_change_skin_update_local))
                     runCatching { account.downloadYggdrasil() }.onFailure { th ->
                         emitError(
                             context.getString(R.string.account_logging_in_failed),
@@ -551,9 +553,11 @@ class AccountManageViewModel @Inject constructor(
                 dispatcher = Dispatchers.IO,
                 task = { task ->
                     executeWithAuthorization(block = {
-                        task.updateProgress(-1f, R.string.account_change_cape_fetch_all)
+                        task.updateProgress(-1f)
+                        task.updateMessage(androidText(R.string.account_change_cape_fetch_all))
                         val profile = getPlayerProfile(MINECRAFT_SERVICES_URL, account.accessToken)
-                        task.updateProgress(-1f, R.string.account_change_cape_cache_all)
+                        task.updateProgress(-1f)
+                        task.updateMessage(androidText(R.string.account_change_cape_cache_all))
                         cacheAllCapes(profile)
                         //同时更新本地的皮肤/披风
                         account.downloadYggdrasil()
@@ -586,7 +590,7 @@ class AccountManageViewModel @Inject constructor(
                 dispatcher = Dispatchers.IO,
                 task = { task ->
                     executeWithAuthorization(block = {
-                        task.updateMessage(R.string.account_change_cape_apply)
+                        task.updateMessage(androidText(R.string.account_change_cape_apply))
                         changeCape(
                             MINECRAFT_SERVICES_URL,
                             account.accessToken,
@@ -659,7 +663,7 @@ class AccountManageViewModel @Inject constructor(
     /** 第三方 Yggdrasil 服务器登录 */
     private fun loginWithOtherServer(intent: AccountManageIntent.LoginWithOtherServer) {
         AuthServerHelper(intent.server, intent.email, intent.pass, onSuccess = { account, task ->
-            task.updateMessage(R.string.account_logging_in_saving)
+            task.updateMessage(androidText(R.string.account_logging_in_saving))
             account.downloadYggdrasil()
             AccountsManager.suspendSaveAccount(account)
         }, onFailed = {

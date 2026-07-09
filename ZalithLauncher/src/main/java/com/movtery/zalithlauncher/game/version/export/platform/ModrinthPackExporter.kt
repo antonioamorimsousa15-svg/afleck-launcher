@@ -35,6 +35,7 @@ import com.movtery.zalithlauncher.game.version.export.PackType
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.game.version.mod.enabledMod
 import com.movtery.zalithlauncher.game.version.mod.isDisabled
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.utils.GSON
 import com.movtery.zalithlauncher.utils.logging.Logger
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +76,9 @@ class ModrinthPackExporter: AbstractExporter(
                     selectedFiles = info.selectedFiles,
                     onProgress = { file ->
                         if (file != null) {
-                            task.updateMessage(R.string.empty_holder, file.nameWithoutExtension)
+                            task.updateMessage(androidText(
+                                R.string.empty_holder, file.nameWithoutExtension
+                            ))
                         } else {
                             task.updateMessage(null)
                         }

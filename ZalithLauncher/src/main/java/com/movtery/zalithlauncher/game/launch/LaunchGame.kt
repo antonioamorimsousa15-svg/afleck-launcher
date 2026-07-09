@@ -39,6 +39,7 @@ import com.movtery.zalithlauncher.game.version.installed.VersionFolders
 import com.movtery.zalithlauncher.game.version.mod.AllModReader
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.activities.runGame
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.utils.GSON
 import com.movtery.zalithlauncher.utils.file.readText
 import com.movtery.zalithlauncher.utils.logging.Logger
@@ -121,9 +122,10 @@ object LaunchGame {
             verifyIntegrity = !version.skipGameIntegrityCheck(),
             mode = DownloadMode.VERIFY_AND_REPAIR,
             onCompletion = { task ->
-                task.updateProgress(-1f, null)
+                task.updateProgress(-1f)
+                task.updateMessage(null)
                 checkEnableTouchProxy(version)
-                task.updateMessage(R.string.game_vulkan_check_title)
+                task.updateMessage(androidText(R.string.game_vulkan_check_title))
                 checkVulkanCapabilities(version, waitForVulkanChecker)
 
                 runGame(context, version, account)

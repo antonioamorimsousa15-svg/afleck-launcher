@@ -66,6 +66,7 @@ import com.movtery.zalithlauncher.game.multirt.Runtime
 import com.movtery.zalithlauncher.game.multirt.RuntimesManager
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.components.IconTextButton
@@ -229,7 +230,9 @@ private fun RuntimeOperation(
                     id = runtime.name,
                     dispatcher = Dispatchers.IO,
                     task = { task ->
-                        task.updateMessage(R.string.multirt_runtime_deleting, runtime.name)
+                        task.updateMessage(androidText(
+                            R.string.multirt_runtime_deleting, runtime.name
+                        ))
                         RuntimesManager.removeRuntime(runtime.name)
                     },
                     onError = {
@@ -286,7 +289,9 @@ private fun progressRuntimeUri(
                     inputStream = inputStream,
                     name = name,
                     updateProgress = { textRes, textArg ->
-                        task.updateMessage(textRes, *textArg)
+                        task.updateMessage(androidText(
+                            textRes, *textArg
+                        ))
                     }
                 )
             },

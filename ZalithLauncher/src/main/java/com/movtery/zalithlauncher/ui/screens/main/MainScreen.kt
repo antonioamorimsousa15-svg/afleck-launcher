@@ -78,6 +78,7 @@ import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.ui.AndroidStringText
 import com.movtery.zalithlauncher.ui.base.applyFullscreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
@@ -697,11 +698,14 @@ private fun TaskMenu(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     items(tasks) { task ->
+                        val taskProgress by task.progress.collectAsStateWithLifecycle()
+                        val taskMessage by task.message.collectAsStateWithLifecycle()
+                        val rateBytesPerSec by task.rateBytesPerSec.collectAsStateWithLifecycle()
+
                         TaskItem(
-                            taskProgress = task.currentProgress,
-                            taskMessageRes = task.currentMessageRes,
-                            taskMessageArgs = task.currentMessageArgs,
-                            taskRateBytesPerSec = task.currentRateBytesPerSec,
+                            taskProgress = taskProgress,
+                            taskMessage = taskMessage,
+                            rateBytesPerSec = rateBytesPerSec,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
@@ -719,9 +723,8 @@ private fun TaskMenu(
 @Composable
 private fun TaskItem(
     taskProgress: Float,
-    taskMessageRes: Int?,
-    taskMessageArgs: Array<out Any>?,
-    taskRateBytesPerSec: Long,
+    taskMessage: AndroidStringText?,
+    rateBytesPerSec: Long?,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.large,
     color: Color = cardColor(false),
@@ -756,13 +759,9 @@ private fun TaskItem(
                     .weight(1f)
                     .align(Alignment.CenterVertically)
             ) {
-                taskMessageRes?.let { messageRes ->
-                    Text(
-                        text = if (taskMessageArgs != null) {
-                            stringResource(messageRes, *taskMessageArgs)
-                        } else {
-                            stringResource(messageRes)
-                        },
+                taskMessage?.let { message ->
+                    AndroidStringText(
+                        text = message,
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -789,7 +788,7 @@ private fun TaskItem(
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
-                    taskRateBytesPerSec.takeIf { it >= 0L }?.let { bytes ->
+                    rateBytesPerSec?.let { bytes ->
                         val text = remember(bytes) { "${formatFileSize(bytes)}/s" }
                         Text(
                             text = text,
