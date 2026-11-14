@@ -678,7 +678,8 @@ fun AfleckLauncherTheme(
         LocalFestivals provides festivals
     ) {
         MaterialExpressiveTheme(
-            colorScheme = currentDisplayScheme,
+            colorScheme = afColorScheme(),
+            shapes = afShapes(),
             motionScheme = MotionScheme.expressive(),
             typography = AppTypography,
             content = content

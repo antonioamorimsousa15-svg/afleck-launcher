@@ -58,14 +58,14 @@ private fun flatCardElevation() = CardDefaults.cardElevation(
 fun BackgroundCard(
     modifier: Modifier = Modifier,
     influencedByBackground: Boolean = true,
-    shape: Shape = CardDefaults.shape,
+    shape: Shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
     colors: CardColors = CardDefaults.cardColors(
         containerColor = cardColor(influencedByBackground),
         contentColor = onCardColor()
     ),
     elevation: CardElevation = flatCardElevation(),
     blur: Int = AllSettings.backgroundBlur.state,
-    border: BorderStroke? = null,
+    border: BorderStroke? = BorderStroke(1.dp, com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder.copy(alpha = 0.6f)),
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -90,7 +90,7 @@ fun BackgroundCard(
 fun BackgroundCard(
     modifier: Modifier = Modifier,
     influencedByBackground: Boolean = true,
-    shape: Shape = CardDefaults.shape,
+    shape: Shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
     colors: CardColors = CardDefaults.cardColors(
         containerColor = cardColor(influencedByBackground),
         contentColor = onCardColor(),
@@ -98,7 +98,7 @@ fun BackgroundCard(
     ),
     elevation: CardElevation = flatCardElevation(),
     blur: Int = AllSettings.backgroundBlur.state,
-    border: BorderStroke? = null,
+    border: BorderStroke? = BorderStroke(1.dp, com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder.copy(alpha = 0.6f)),
     onClick: () -> Unit,
     enabled: Boolean = true,
     content: @Composable @UiComposable ColumnScope.() -> Unit

@@ -1,0 +1,68 @@
+package com.shoyoomc.aflecklauncher.ui.theme
+
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.Shapes
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState
+
+/**
+ * Esquema de cores do Afleck: todas as telas (Versões, Download, Contas, Ajustes...)
+ * passam a seguir o mesmo tema escolhido na aba Aparência.
+ */
+@Composable
+fun afColorScheme(): ColorScheme {
+    val accent = AfThemeState.accent
+    val accent2 = AfThemeState.accent2
+    val border = AfThemeState.border
+    val base = AfThemeState.base
+    val glass = AfThemeState.panelOpacity / 100f
+    val navy = lerp(base, Color.Black, 0.55f).copy(alpha = 1f)
+    val bg = lerp(base, Color.Black, 0.4f).copy(alpha = 1f)
+    return darkColorScheme(
+        primary = accent,
+        onPrimary = navy,
+        primaryContainer = lerp(base, accent, 0.28f).copy(alpha = 1f),
+        onPrimaryContainer = Color.White,
+        inversePrimary = accent2,
+        secondary = accent2,
+        onSecondary = navy,
+        secondaryContainer = lerp(base, accent2, 0.22f).copy(alpha = 1f),
+        onSecondaryContainer = Color.White,
+        tertiary = border,
+        onTertiary = navy,
+        tertiaryContainer = lerp(base, border, 0.25f).copy(alpha = 1f),
+        onTertiaryContainer = Color.White,
+        background = bg,
+        onBackground = Color.White,
+        surface = bg,
+        onSurface = Color.White,
+        surfaceVariant = lerp(base, Color.White, 0.08f).copy(alpha = 1f),
+        onSurfaceVariant = AfThemeState.current.dim,
+        surfaceTint = accent,
+        inverseSurface = Color.White,
+        inverseOnSurface = navy,
+        outline = border,
+        outlineVariant = lerp(base, border, 0.4f).copy(alpha = 1f),
+        surfaceDim = lerp(base, Color.Black, 0.6f).copy(alpha = 1f),
+        surfaceBright = lerp(base, Color.White, 0.15f).copy(alpha = 1f),
+        surfaceContainerLowest = lerp(base, Color.Black, 0.5f).copy(alpha = glass),
+        surfaceContainerLow = lerp(base, Color.Black, 0.25f).copy(alpha = glass),
+        surfaceContainer = base.copy(alpha = glass),
+        surfaceContainerHigh = lerp(base, Color.White, 0.06f).copy(alpha = 1f),
+        surfaceContainerHighest = lerp(base, Color.White, 0.12f).copy(alpha = 1f),
+    )
+}
+
+/** Formato retangular com bordas bem arredondadas, em todo o app. */
+fun afShapes() = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(20.dp),
+    extraLarge = RoundedCornerShape(28.dp)
+)
