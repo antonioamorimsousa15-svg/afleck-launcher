@@ -5,7 +5,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.drawOutline
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
@@ -242,6 +241,18 @@ internal fun AfIconCircle(icon: Int, size: Dp = 40.dp, filled: Boolean = false, 
 }
 
 /** Painel "vidro HUD": degradê de vidro, brilho no topo e cantoneiras neon nos cantos. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.afOutline(
+    outline: androidx.compose.ui.graphics.Outline,
+    color: Color,
+    style: androidx.compose.ui.graphics.drawscope.DrawStyle = androidx.compose.ui.graphics.drawscope.Fill
+) = drawPath(outline.afPath(), color, style = style)
+
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.afOutline(
+    outline: androidx.compose.ui.graphics.Outline,
+    brush: Brush,
+    style: androidx.compose.ui.graphics.drawscope.DrawStyle = androidx.compose.ui.graphics.drawscope.Fill
+) = drawPath(outline.afPath(), brush, style = style)
+
 private fun androidx.compose.ui.graphics.Outline.afPath(): androidx.compose.ui.graphics.Path = when (this) {
     is androidx.compose.ui.graphics.Outline.Rectangle -> androidx.compose.ui.graphics.Path().apply { addRect(rect) }
     is androidx.compose.ui.graphics.Outline.Rounded -> androidx.compose.ui.graphics.Path().apply { addRoundRect(roundRect) }
@@ -268,8 +279,8 @@ internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: C
             )
             if (sel) drawRect(color.copy(alpha = 0.14f))
             // luz que entra pelas bordas
-            drawOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(10.dp.toPx()))
-            drawOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(4.dp.toPx()))
+            afOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(10.dp.toPx()))
+            afOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(4.dp.toPx()))
             // reflexo no canto superior esquerdo
             drawRect(
                 Brush.radialGradient(
@@ -279,7 +290,7 @@ internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: C
             )
         }
         // borda fina: clara em cima, mais suave embaixo
-        drawOutline(
+        afOutline(
             o,
             Brush.verticalGradient(listOf(tint.copy(alpha = 0.85f), tint.copy(alpha = 0.28f), tint.copy(alpha = 0.5f))),
             style = androidx.compose.ui.graphics.drawscope.Stroke(thin)
@@ -330,11 +341,11 @@ internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier
             val o = shape.createOutline(size, layoutDirection, this)
             clipPath(o.afPath()) {
                 // luz clara que sobe das bordas (como no exemplo)
-                drawOutline(o, tint.copy(alpha = 0.07f), style = androidx.compose.ui.graphics.drawscope.Stroke(34.dp.toPx()))
-                drawOutline(o, tint.copy(alpha = 0.09f), style = androidx.compose.ui.graphics.drawscope.Stroke(18.dp.toPx()))
-                drawOutline(o, tint.copy(alpha = 0.12f), style = androidx.compose.ui.graphics.drawscope.Stroke(8.dp.toPx()))
+                afOutline(o, tint.copy(alpha = 0.07f), style = androidx.compose.ui.graphics.drawscope.Stroke(34.dp.toPx()))
+                afOutline(o, tint.copy(alpha = 0.09f), style = androidx.compose.ui.graphics.drawscope.Stroke(18.dp.toPx()))
+                afOutline(o, tint.copy(alpha = 0.12f), style = androidx.compose.ui.graphics.drawscope.Stroke(8.dp.toPx()))
             }
-            drawOutline(
+            afOutline(
                 o,
                 Brush.verticalGradient(listOf(tint.copy(alpha = 0.95f), tint.copy(alpha = 0.55f))),
                 style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx())

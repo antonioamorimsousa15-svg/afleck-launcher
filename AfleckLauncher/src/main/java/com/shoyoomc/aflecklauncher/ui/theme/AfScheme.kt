@@ -60,10 +60,14 @@ fun afColorScheme(): ColorScheme {
 }
 
 /** Formato retangular com bordas bem arredondadas, em todo o app. */
+private fun afCorner(r: androidx.compose.ui.unit.Dp) = androidx.compose.foundation.shape.CutCornerShape(
+    topStart = r, topEnd = r * 0.35f, bottomEnd = r, bottomStart = r * 0.35f
+)
+
 fun afShapes() = Shapes(
-    extraSmall = AfCutShape(6.dp),
-    small = AfCutShape(8.dp),
-    medium = AfCutShape(10.dp),
-    large = AfCutShape(14.dp),
-    extraLarge = AfCutShape(18.dp)
+    extraSmall = afCorner(6.dp),
+    small = afCorner(8.dp),
+    medium = afCorner(10.dp),
+    large = afCorner(14.dp),
+    extraLarge = afCorner(18.dp)
 )
