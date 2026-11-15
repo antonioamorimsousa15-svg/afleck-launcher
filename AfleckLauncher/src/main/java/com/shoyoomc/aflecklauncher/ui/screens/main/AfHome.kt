@@ -56,27 +56,32 @@ fun AfHome(
     onOpenAppearance: () -> Unit,
 ) {
     val slot916 = rememberAfSlot("card916")
-    val bgSlot = rememberAfSlot("bg")
+    val homeSlot = rememberAfSlot("home")
+    val accSlot = rememberAfSlot("acc")
+    val versSlot = rememberAfSlot("vers")
+    val mcvSlot = rememberAfSlot("mcv")
+    val quickSlot = rememberAfSlot("quick")
     var dialog by remember { mutableStateOf<String?>(null) }
 
     Box(Modifier.fillMaxSize()) {
         AfHomeContent(
             onPlay, onOpenVersions, onOpenAccounts, onOpenDownload, onOpenSettings, onOpenAppearance,
-            slot916, onEdit = { dialog = it }
+            slot916, homeSlot, accSlot, versSlot, mcvSlot, quickSlot, onEdit = { dialog = it }
         )
     }
     when (dialog) {
-        "home" -> AfSlotDialog(
-            "Fundo do Launcher",
-            "Imagem de fundo de todo o Launcher.",
-            bgSlot
-        ) { dialog = null }
-        "card916" -> AfSlotDialog(
-            "Wallpaper 9:16",
-            "Imagem ou GIF só para o quadro 9:16 da tela inicial. A opacidade daqui é separada das outras.",
-            slot916
-        ) { dialog = null }
+        "home" -> AfCardDialog("Fundo de Bem-vindo", homeSlot) { dialog = null }
+        "acc" -> AfCardDialog("Fundo de Conta", accSlot) { dialog = null }
+        "vers" -> AfCardDialog("Fundo de Suas versões", versSlot) { dialog = null }
+        "mcv" -> AfCardDialog("Fundo de Versão do Minecraft", mcvSlot) { dialog = null }
+        "quick" -> AfCardDialog("Fundo de Configurações Rápidas", quickSlot) { dialog = null }
+        "card916" -> AfCardDialog("Imagem 9:16", slot916) { dialog = null }
     }
+}
+
+@Composable
+private fun AfCardDialog(title: String, slot: AfImageSlot, onDismiss: () -> Unit) {
+    AfSlotDialog(title, "Imagem, GIF ou vídeo para o fundo deste quadro. A opacidade daqui é separada das outras.", slot, onDismiss)
 }
 
 @Composable
@@ -88,6 +93,11 @@ private fun AfHomeContent(
     onOpenSettings: () -> Unit,
     onOpenAppearance: () -> Unit,
     slot916: AfImageSlot,
+    homeSlot: AfImageSlot,
+    accSlot: AfImageSlot,
+    versSlot: AfImageSlot,
+    mcvSlot: AfImageSlot,
+    quickSlot: AfImageSlot,
     onEdit: (String) -> Unit,
 ) {
     val account by AccountsManager.currentAccountFlow.collectAsState()
@@ -103,6 +113,7 @@ private fun AfHomeContent(
         Row(Modifier.fillMaxWidth().height(176.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             // Bem-vindo de volta
             AfPanel(Modifier.weight(2.5f).fillMaxHeight()) {
+                AfCardBg(homeSlot)
                 Column(Modifier.fillMaxSize().padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_package_2_outlined), null, tint = AfAccent, modifier = Modifier.size(22.dp))
@@ -127,6 +138,7 @@ private fun AfHomeContent(
             }
             // Conta
             AfPanel(Modifier.weight(1.6f).fillMaxHeight()) {
+                AfCardBg(accSlot)
                 Column(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_person_filled), null, tint = AfAccent, modifier = Modifier.size(22.dp))
@@ -141,6 +153,8 @@ private fun AfHomeContent(
                             Spacer(Modifier.width(4.dp))
                             Text("Skins", color = AfNavy, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
+                        Spacer(Modifier.width(6.dp))
+                        Box(Modifier.afClick { onEdit("acc") }) { AfIconCircle(R.drawable.ic_image_filled, size = 30.dp) }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
@@ -186,12 +200,15 @@ private fun AfHomeContent(
         Row(Modifier.fillMaxWidth().height(184.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             // Suas versões
             AfPanel(Modifier.weight(1.6f).fillMaxHeight()) {
+                AfCardBg(versSlot)
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_package_2_outlined), null, tint = AfAccent, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
                         Text("Suas versões", color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                         Text("Ver todas ›", color = AfAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.afClick(onOpenVersions))
+                        Spacer(Modifier.width(6.dp))
+                        Box(Modifier.afClick { onEdit("vers") }) { AfIconCircle(R.drawable.ic_image_filled, size = 30.dp) }
                     }
                     val first = allVersions.firstOrNull()
                     if (first == null) {
@@ -219,11 +236,13 @@ private fun AfHomeContent(
             }
             // Versão do Minecraft
             AfPanel(Modifier.weight(1.25f).fillMaxHeight()) {
+                AfCardBg(mcvSlot)
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_sports_esports_outlined), null, tint = AfAccent, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Versão do Minecraft", color = AfText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                        Text("Versão do Minecraft", color = AfText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.weight(1f))
+                        Box(Modifier.afClick { onEdit("mcv") }) { AfIconCircle(R.drawable.ic_image_filled, size = 30.dp) }
                     }
                     Row(Modifier.weight(1f).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         VersionIconImage(current, Modifier.size(46.dp))
@@ -245,12 +264,13 @@ private fun AfHomeContent(
             }
             // Configurações Rápidas
             AfPanel(Modifier.weight(1.5f).fillMaxHeight()) {
+                AfCardBg(quickSlot)
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_settings_filled), null, tint = AfAccent, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
                         Text("Configurações Rápidas", color = AfText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.weight(1f))
-                        AfIconCircle(R.drawable.ic_edit_outlined, size = 34.dp)
+                        Box(Modifier.afClick { onEdit("quick") }) { AfIconCircle(R.drawable.ic_edit_outlined, size = 34.dp) }
                     }
                     Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         QuickTile(Modifier.weight(1f), R.drawable.ic_video_settings, "Gráficos", onOpenSettings)
