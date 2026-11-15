@@ -300,7 +300,7 @@ private fun ActionsLayout(
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 8.dp)) {
             Text(
-                "OPERADOR // CONTA ATUAL", color = AfAccent,
+                "OPERADOR // ATUAL", color = AfAccent,
                 fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp
             )
             Text(
@@ -327,7 +327,7 @@ private fun ActionsLayout(
                     ?.inputStream()?.use { it.readBytes() }
             }
         }
-        Box(
+        com.shoyoomc.aflecklauncher.ui.screens.main.AfModelStage(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -361,7 +361,7 @@ private fun ActionsLayout(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     val acc = currentAccount
-                    if (acc != null && acc.isSkinChangeAllowed()) {
+                    if (acc != null && !acc.isAuthServerAccount()) {
                         actions.onIntent(
                             AccountManageIntent.UpdateAccountSkinOp(AccountSkinOperation.ChangeSkin(acc))
                         )

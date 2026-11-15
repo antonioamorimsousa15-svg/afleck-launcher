@@ -48,7 +48,6 @@ fun rememberSystemUsage(enabled: Boolean): State<SystemUsage> =
             val cpu = ((cpuNow - lastCpu) * 100f / (dWall * cores)).toInt().coerceIn(0, 100)
             lastCpu = cpuNow
             lastWall = wallNow
-            val gpu = withContext(Dispatchers.IO) { readGpuPercent() }
-            value = SystemUsage(cpu, gpu)
+            value = SystemUsage(cpu, null)
         }
     }
