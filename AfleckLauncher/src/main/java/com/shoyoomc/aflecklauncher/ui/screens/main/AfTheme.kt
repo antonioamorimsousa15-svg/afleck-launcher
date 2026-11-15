@@ -1,6 +1,10 @@
 package com.shoyoomc.aflecklauncher.ui.screens.main
 
 import android.content.Context
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.clipPath
 import android.content.SharedPreferences
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -76,9 +80,11 @@ object AfThemeState {
         private set
     var contrast by mutableIntStateOf(0)
         private set
-    var panelOpacity by mutableIntStateOf(92)
+    var panelOpacity by mutableIntStateOf(60)
         private set
     var animate by mutableStateOf(false)
+        private set
+    var uiScale by mutableIntStateOf(90)
         private set
 
     private var prefs: SharedPreferences? = null
@@ -90,8 +96,9 @@ object AfThemeState {
         themeId = p.getString("theme.id", "branca") ?: "branca"
         vibrance = p.getInt("theme.vibrance", 0)
         contrast = p.getInt("theme.contrast", 0)
-        panelOpacity = p.getInt("theme.panelOpacity", 92)
+        panelOpacity = p.getInt("theme.panelOpacity", 60)
         animate = p.getBoolean("theme.animate", false)
+        uiScale = p.getInt("theme.uiScale", 90)
     }
 
     fun chooseTheme(id: String) { themeId = id; saveAll() }
@@ -99,7 +106,8 @@ object AfThemeState {
     fun changeContrast(v: Int) { contrast = v.coerceIn(-100, 100); saveAll() }
     fun changePanelOpacity(v: Int) { panelOpacity = v.coerceIn(30, 100); saveAll() }
     fun changeAnimate(v: Boolean) { animate = v; saveAll() }
-    fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 92; animate = false; saveAll() }
+    fun changeUiScale(v: Int) { uiScale = v.coerceIn(60, 110); saveAll() }
+    fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 60; animate = false; uiScale = 90; saveAll() }
 
     private fun saveAll() {
         prefs?.edit()
@@ -108,6 +116,7 @@ object AfThemeState {
             ?.putInt("theme.contrast", contrast)
             ?.putInt("theme.panelOpacity", panelOpacity)
             ?.putBoolean("theme.animate", animate)
+            ?.putInt("theme.uiScale", uiScale)
             ?.apply()
     }
 
@@ -163,9 +172,9 @@ internal fun AfPanel(
     val shape = RoundedCornerShape(radius)
     Box(
         modifier = modifier
+            .afGlow(shape, AfBorder, if (deep) 1f else 0.8f)
             .clip(shape)
-            .background(if (deep) AfPanelDeep else AfPanel)
-            .border(BorderStroke(1.5.dp, AfBorder), shape),
+            .background(if (deep) AfPanelDeep else AfPanel),
         content = content
     )
 }
@@ -174,17 +183,19 @@ internal fun AfPanel(
 @Composable
 internal fun AfButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     Row(
-        modifier = modifier.height(50.dp).clip(CircleShape)
-            .background(afAccentBrush())
+        modifier = modifier.height(50.dp)
+            .afGlow(CircleShape, AfAccent, 1.2f)
+            .clip(CircleShape)
+            .background(AfAccent.copy(alpha = 0.16f))
             .afClick(onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         if (icon != null) {
-            Icon(painterResource(icon), null, tint = AfNavy, modifier = Modifier.size(22.dp))
+            Icon(painterResource(icon), null, tint = AfAccent, modifier = Modifier.size(22.dp))
             Spacer(Modifier.width(8.dp))
         }
-        Text(text, color = AfNavy, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(text, color = AfText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
 }
 
@@ -192,9 +203,10 @@ internal fun AfButton(text: String, modifier: Modifier = Modifier, icon: Int? = 
 @Composable
 internal fun AfOutlineButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     Row(
-        modifier = modifier.height(44.dp).clip(CircleShape)
-            .background(AfNavy.copy(alpha = 0.5f))
-            .border(1.5.dp, AfBorder, CircleShape)
+        modifier = modifier.height(44.dp)
+            .afGlow(CircleShape, AfBorder, 0.8f)
+            .clip(CircleShape)
+            .background(AfNavy.copy(alpha = 0.35f))
             .afClick(onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -211,11 +223,97 @@ internal fun AfOutlineButton(text: String, modifier: Modifier = Modifier, icon: 
 @Composable
 internal fun AfIconCircle(icon: Int, size: Dp = 40.dp, filled: Boolean = false, modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.size(size).clip(CircleShape)
-            .background(if (filled) afAccentBrush() else Brush.horizontalGradient(listOf(AfNavy, AfNavy)))
-            .then(if (filled) Modifier else Modifier.border(1.5.dp, AfBorder, CircleShape)),
+        modifier = modifier.size(size)
+            .afGlow(CircleShape, if (filled) AfAccent else AfBorder, if (filled) 1.2f else 0.7f)
+            .clip(CircleShape)
+            .background(if (filled) AfAccent.copy(alpha = 0.16f) else AfNavy.copy(alpha = 0.5f)),
         contentAlignment = Alignment.Center
     ) {
-        Icon(painterResource(icon), null, tint = if (filled) AfNavy else AfText, modifier = Modifier.size(size * 0.5f))
+        Icon(painterResource(icon), null, tint = if (filled) AfAccent else AfText, modifier = Modifier.size(size * 0.5f))
     }
+}
+
+/** Painel "vidro HUD": degradê de vidro, brilho no topo e cantoneiras neon nos cantos. */
+private fun androidx.compose.ui.graphics.Outline.afPath(): androidx.compose.ui.graphics.Path = when (this) {
+    is androidx.compose.ui.graphics.Outline.Rectangle -> androidx.compose.ui.graphics.Path().apply { addRect(rect) }
+    is androidx.compose.ui.graphics.Outline.Rounded -> androidx.compose.ui.graphics.Path().apply { addRoundRect(roundRect) }
+    is androidx.compose.ui.graphics.Outline.Generic -> path
+}
+
+/**
+ * Vidro fino (pílulas, botões, linhas): fundo claro translúcido, borda fina clara,
+ * reflexo no canto de cima e brilho no meio da base. [strength] >= 1.2 = selecionado (tingido com [color]).
+ */
+internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: Color, strength: Float = 1f): Modifier =
+    this.drawWithContent {
+        drawContent()
+        val o = shape.createOutline(size, layoutDirection, this)
+        val sel = strength >= 1.2f
+        val tint = lerp(Color.White, color, if (sel) 0.85f else 0.35f)
+        val w = size.width
+        val h = size.height
+        val thin = 1.dp.toPx()
+        clipPath(o.afPath()) {
+            // vidro: leve véu claro, mais forte em cima
+            drawRect(
+                Brush.verticalGradient(listOf(Color.White.copy(alpha = if (sel) 0.16f else 0.10f), Color.White.copy(alpha = 0.02f))),
+            )
+            if (sel) drawRect(color.copy(alpha = 0.14f))
+            // luz que entra pelas bordas
+            drawOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(10.dp.toPx()))
+            drawOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(4.dp.toPx()))
+            // reflexo no canto superior esquerdo
+            drawRect(
+                Brush.radialGradient(
+                    listOf(Color.White.copy(alpha = 0.55f), Color.Transparent),
+                    center = Offset(w * 0.12f, 0f), radius = (h * 0.9f).coerceAtLeast(24.dp.toPx())
+                )
+            )
+        }
+        // borda fina: clara em cima, mais suave embaixo
+        drawOutline(
+            o,
+            Brush.verticalGradient(listOf(tint.copy(alpha = 0.85f), tint.copy(alpha = 0.28f), tint.copy(alpha = 0.5f))),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(thin)
+        )
+        // brilho no meio da base
+        drawLine(
+            Brush.horizontalGradient(listOf(Color.Transparent, tint.copy(alpha = 0.9f), Color.Transparent)),
+            Offset(w * 0.22f, h - thin), Offset(w * 0.78f, h - thin), thin * 1.4f
+        )
+    }
+
+/** Vidro grande (cartões e painéis): degradê escuro na diagonal, luz nas bordas, borda branca fina. */
+@Composable
+internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier {
+    val base = AfThemeState.base
+    val a = (AfThemeState.panelOpacity / 100f).coerceIn(0.35f, 1f)
+    val tint = lerp(Color.White, AfAccent, 0.2f)
+    val dark = lerp(base, Color.Black, 0.8f)
+    val light = lerp(base, Color.White, 0.35f)
+    return this
+        .background(
+            Brush.linearGradient(
+                0f to dark.copy(alpha = a),
+                0.55f to lerp(dark, base, 0.4f).copy(alpha = a),
+                1f to light.copy(alpha = a * 0.75f),
+                start = Offset(0f, 0f), end = Offset(1400f, 1000f)
+            ),
+            shape
+        )
+        .drawWithContent {
+            drawContent()
+            val o = shape.createOutline(size, layoutDirection, this)
+            clipPath(o.afPath()) {
+                // luz clara que sobe das bordas (como no exemplo)
+                drawOutline(o, tint.copy(alpha = 0.07f), style = androidx.compose.ui.graphics.drawscope.Stroke(34.dp.toPx()))
+                drawOutline(o, tint.copy(alpha = 0.09f), style = androidx.compose.ui.graphics.drawscope.Stroke(18.dp.toPx()))
+                drawOutline(o, tint.copy(alpha = 0.12f), style = androidx.compose.ui.graphics.drawscope.Stroke(8.dp.toPx()))
+            }
+            drawOutline(
+                o,
+                Brush.verticalGradient(listOf(tint.copy(alpha = 0.95f), tint.copy(alpha = 0.55f))),
+                style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx())
+            )
+        }
 }
