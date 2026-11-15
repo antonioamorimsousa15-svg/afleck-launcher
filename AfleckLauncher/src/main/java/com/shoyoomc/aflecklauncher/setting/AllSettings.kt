@@ -519,6 +519,11 @@ object AllSettings : SettingsRegistry() {
     val showMemory = boolSetting("showMemory", false)
 
     /**
+     * 在游戏菜单悬浮窗上显示 CPU / GPU 使用率
+     */
+    val showGpuCpu = boolSetting("showGpuCpu", false)
+
+    /**
      * 在游戏画面上展示菜单悬浮窗
      */
     val showMenuBall = boolSetting("showMenuBall", true)

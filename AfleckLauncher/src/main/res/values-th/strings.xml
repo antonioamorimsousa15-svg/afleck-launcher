@@ -364,6 +364,7 @@
     <string name="game_menu_option_input_method">เปลี่ยนวิธีป้อนข้อมูล</string>
     <string name="game_menu_option_switch_fps">แสดง FPS</string>
     <string name="game_menu_option_switch_memory">แสดงหน่วยความจำ</string>
+    <string name="game_menu_option_switch_gpu_cpu">CPU / GPU usage</string>
     <string name="game_menu_option_menu_ball_opacity">ความโปร่งใสของปุ่มเมนูหลัก</string>
     <string name="game_menu_option_send_keycode">ส่งรหัสปุ่ม</string>
     <string name="game_menu_option_replacement_control">แทนที่ชุดปุ่มควบคุม</string>

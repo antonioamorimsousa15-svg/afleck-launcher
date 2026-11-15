@@ -18,6 +18,7 @@
 
 package com.shoyoomc.aflecklauncher.ui.components
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.basicMarquee
@@ -82,7 +83,7 @@ fun ScalingActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+    shape: Shape = AfCutShape(10.dp),
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
     border: BorderStroke? = BorderStroke(1.5.dp, com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder),

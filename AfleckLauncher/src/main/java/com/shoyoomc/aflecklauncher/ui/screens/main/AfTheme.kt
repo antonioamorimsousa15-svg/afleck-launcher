@@ -6,6 +6,13 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawOutline
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import android.content.SharedPreferences
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -170,7 +177,7 @@ internal fun AfPanel(
     deep: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val shape = RoundedCornerShape(radius)
+    val shape = AfCutShape((radius.value * 0.55f).dp)
     Box(
         modifier = modifier
             .afGlow(shape, AfBorder, if (deep) 1f else 0.8f)
@@ -185,8 +192,8 @@ internal fun AfPanel(
 internal fun AfButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     Row(
         modifier = modifier.height(50.dp)
-            .afGlow(CircleShape, AfAccent, 1.2f)
-            .clip(CircleShape)
+            .afGlow(AfCutShape(12.dp), AfAccent, 1.2f)
+            .clip(AfCutShape(12.dp))
             .background(AfAccent.copy(alpha = 0.16f))
             .afClick(onClick),
         verticalAlignment = Alignment.CenterVertically,
@@ -205,8 +212,8 @@ internal fun AfButton(text: String, modifier: Modifier = Modifier, icon: Int? = 
 internal fun AfOutlineButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     Row(
         modifier = modifier.height(44.dp)
-            .afGlow(CircleShape, AfBorder, 0.8f)
-            .clip(CircleShape)
+            .afGlow(AfCutShape(12.dp), AfBorder, 0.8f)
+            .clip(AfCutShape(12.dp))
             .background(AfNavy.copy(alpha = 0.35f))
             .afClick(onClick),
         verticalAlignment = Alignment.CenterVertically,
@@ -284,12 +291,28 @@ internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: C
         )
     }
 
+/** Moldura HUD: cantos cortados (cortes grandes em cima à esquerda e embaixo à direita, pequenos nos outros). */
+class AfCutShape(private val cut: Dp = 14.dp) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val w = size.width
+        val h = size.height
+        val c = with(density) { cut.toPx() }.coerceAtMost(minOf(w, h) / 3f)
+        val s = c * 0.35f
+        val p = Path().apply {
+            moveTo(c, 0f); lineTo(w - s, 0f); lineTo(w, s); lineTo(w, h - c)
+            lineTo(w - c, h); lineTo(s, h); lineTo(0f, h - s); lineTo(0f, c); close()
+        }
+        return Outline.Generic(p)
+    }
+}
+
 /** Vidro grande (cartões e painéis): degradê escuro na diagonal, luz nas bordas, borda branca fina. */
 @Composable
 internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier {
     val base = AfThemeState.base
     val a = (AfThemeState.panelOpacity / 100f).coerceIn(0.35f, 1f)
     val tint = lerp(Color.White, AfAccent, 0.2f)
+    val accent = AfAccent
     val dark = lerp(base, Color.Black, 0.8f)
     val light = lerp(base, Color.White, 0.35f)
     return this
@@ -316,5 +339,22 @@ internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier
                 Brush.verticalGradient(listOf(tint.copy(alpha = 0.95f), tint.copy(alpha = 0.55f))),
                 style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx())
             )
+            // detalhes de HUD (só em cartões grandes): moldura interna, parafuso (+) e aba na base
+            val w = size.width
+            val h = size.height
+            if (w > 150.dp.toPx() && h > 60.dp.toPx()) {
+                val inset = 5.dp.toPx()
+                withTransform({ scale((w - 2 * inset) / w, (h - 2 * inset) / h, Offset(w / 2f, h / 2f)) }) {
+                    drawPath(o.afPath(), tint.copy(alpha = 0.32f), style = androidx.compose.ui.graphics.drawscope.Stroke(0.8.dp.toPx()))
+                }
+                val c = Offset(w - 15.dp.toPx(), 14.dp.toPx())
+                drawCircle(accent.copy(alpha = 0.85f), 5.dp.toPx(), c, style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx()))
+                drawLine(accent.copy(alpha = 0.85f), Offset(c.x - 2.5.dp.toPx(), c.y), Offset(c.x + 2.5.dp.toPx(), c.y), 1.dp.toPx())
+                drawLine(accent.copy(alpha = 0.85f), Offset(c.x, c.y - 2.5.dp.toPx()), Offset(c.x, c.y + 2.5.dp.toPx()), 1.dp.toPx())
+                val tab = Path().apply {
+                    moveTo(w * 0.58f, h); lineTo(w * 0.60f, h - 4.dp.toPx()); lineTo(w * 0.78f, h - 4.dp.toPx()); lineTo(w * 0.80f, h); close()
+                }
+                drawPath(tab, accent.copy(alpha = 0.85f))
+            }
         }
 }

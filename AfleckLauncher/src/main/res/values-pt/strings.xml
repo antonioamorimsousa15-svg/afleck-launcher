@@ -786,6 +786,7 @@
     <string name="settings_control_mouse_pointer_hotspot_y_percent">Coordenada Y</string>
     <string name="manage_delete_all">Apagar Tudo</string>
     <string name="game_menu_option_switch_memory">Mostrar Memória</string>
+    <string name="game_menu_option_switch_gpu_cpu">Mostrar uso de CPU e GPU</string>
     <string name="settings_game_java_memory_allocation_text">Alocado: %dMB</string>
     <string name="versions_overview_mod_folder">Pasta de Mods</string>
     <string name="settings_gamepad_mapping_in_game">Dentro do Jogo</string>

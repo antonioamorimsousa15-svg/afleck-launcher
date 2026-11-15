@@ -37,13 +37,11 @@ fun AfSidebar(
     inDownload: Boolean,
     inAccounts: Boolean,
     inSettings: Boolean,
-    inAppearance: Boolean,
     onHome: () -> Unit,
     onVersions: () -> Unit,
     onDownload: () -> Unit,
     onAccounts: () -> Unit,
     onSettings: () -> Unit,
-    onAppearance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     AfPanel(modifier = modifier.width(190.dp).fillMaxHeight(), radius = 30.dp, deep = true) {
@@ -56,34 +54,33 @@ fun AfSidebar(
             NavPill(R.drawable.ic_download_2_filled, "Download", inDownload, onDownload)
             NavPill(R.drawable.ic_person_filled, "Contas", inAccounts, onAccounts)
             NavPill(R.drawable.ic_settings_filled, "Ajustes", inSettings, onSettings)
-            NavPill(R.drawable.ic_checkroom, "Aparência", inAppearance, onAppearance)
         }
     }
 }
 
 @Composable
 private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> Unit) {
+    val color = if (selected) AfAccent else AfBorder
     Row(
-        modifier = Modifier.fillMaxWidth().height(56.dp).clip(CircleShape)
-            .background(
-                if (selected) Brush.horizontalGradient(listOf(AfAccent, AfAccent2))
-                else Brush.horizontalGradient(listOf(AfPanel, AfPanel))
-            )
-            .border(1.5.dp, AfBorder, CircleShape)
+        modifier = Modifier.fillMaxWidth().height(56.dp)
+            .afGlow(AfCutShape(14.dp), color, if (selected) 1.6f else 0.6f)
+            .clip(AfCutShape(14.dp))
+            .background(if (selected) AfAccent.copy(alpha = 0.18f) else AfNavy.copy(alpha = 0.35f))
             .afClick(onClick)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(42.dp).clip(CircleShape).background(AfNavy)
-                .border(1.5.dp, AfBorder, CircleShape),
+            modifier = Modifier.size(42.dp)
+                .afGlow(CircleShape, color, 0.6f)
+                .clip(CircleShape).background(AfNavy.copy(alpha = 0.6f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(painterResource(icon), null, tint = if (selected) AfAccent else AfText, modifier = Modifier.size(21.dp))
         }
         Spacer(Modifier.width(12.dp))
         Text(
-            label, color = if (selected) AfNavy else AfText,
+            label, color = if (selected) AfAccent else AfText,
             fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1
         )
     }

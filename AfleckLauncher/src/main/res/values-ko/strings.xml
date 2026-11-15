@@ -362,6 +362,7 @@
     <string name="game_menu_option_input_method">입력 방식 전환</string>
     <string name="game_menu_option_switch_fps">FPS 표시</string>
     <string name="game_menu_option_switch_memory">메모리 표시</string>
+    <string name="game_menu_option_switch_gpu_cpu">CPU / GPU usage</string>
     <string name="game_menu_option_menu_ball_opacity">메뉴 오버레이 투명도</string>
     <string name="game_menu_option_send_keycode">키코드 전송</string>
     <string name="game_menu_option_replacement_control">컨트롤 배치 변경</string>

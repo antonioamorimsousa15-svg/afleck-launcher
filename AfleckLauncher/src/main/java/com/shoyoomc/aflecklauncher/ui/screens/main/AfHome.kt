@@ -173,8 +173,8 @@ private fun AfHomeContent(
             }
             // Imagem 9:16 (plano de fundo)
             Box(
-                Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(28.dp))
-                    .border(2.dp, AfBorder, RoundedCornerShape(28.dp))
+                Modifier.weight(1f).fillMaxHeight().clip(AfCutShape(16.dp))
+                    .border(2.dp, AfBorder, AfCutShape(16.dp))
             ) {
                 AfSlotImage(slot916, R.drawable.af_bg, Modifier.fillMaxSize())
                 Box(Modifier.align(Alignment.TopEnd).padding(8.dp).afClick { onEdit("card916") }) {
@@ -182,7 +182,7 @@ private fun AfHomeContent(
                 }
                 Text(
                     "9:16", color = AfText, fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.BottomStart).padding(10.dp).clip(RoundedCornerShape(10.dp))
+                    modifier = Modifier.align(Alignment.BottomStart).padding(10.dp).clip(AfCutShape(8.dp))
                         .background(AfNavy.copy(alpha = 0.85f)).padding(horizontal = 10.dp, vertical = 4.dp)
                 )
             }
@@ -241,9 +241,9 @@ private fun PromoCard(
             }
             Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(
-                    Modifier.fillMaxHeight().aspectRatio(1f).clip(RoundedCornerShape(20.dp))
+                    Modifier.fillMaxHeight().aspectRatio(1f).clip(AfCutShape(12.dp))
                         .background(Brush.verticalGradient(listOf(AfNavy, AfPanelDeep)))
-                        .border(1.5.dp, AfBorder, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AfBorder, AfCutShape(12.dp))
                         .afClick(onEdit),
                     contentAlignment = Alignment.Center
                 ) {
@@ -265,7 +265,7 @@ private fun PromoCard(
 
 @Composable
 private fun QuickTile(modifier: Modifier, icon: Int, label: String, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(22.dp)
+    val shape = AfCutShape(14.dp)
     Column(
         modifier = modifier.fillMaxHeight().clip(shape).background(AfNavy.copy(alpha = 0.55f))
             .border(1.5.dp, AfBorder, shape).afClick(onClick),

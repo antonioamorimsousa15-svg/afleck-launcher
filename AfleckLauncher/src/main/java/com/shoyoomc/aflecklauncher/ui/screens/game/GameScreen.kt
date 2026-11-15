@@ -32,7 +32,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LoadingIndicator
+import com.shoyoomc.aflecklauncher.ui.components.LoadingIndicator
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,6 +44,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.fillMaxWidth
+import com.shoyoomc.aflecklauncher.ui.components.LinearProgressIndicator
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfDim
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -838,6 +846,7 @@ fun GameScreen(
                     fpsMax = { viewModel.fpsMax },
                     fpsMin = { viewModel.fpsMin },
                     showMemory = AllSettings.showMemory.state,
+                    showUsage = AllSettings.showGpuCpu.state,
                     opened = viewModel.gameMenuState == MenuState.SHOW,
                     alpha = AllSettings.menuBallOpacity.state / 100f,
                     onClick = {
@@ -902,9 +911,9 @@ private fun GameInfoBox(
         BackgroundCard(
             modifier = modifier,
             influencedByBackground = false,
-            shape = MaterialTheme.shapes.extraLarge
+            shape = AfCutShape(20.dp)
         ) {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Row(
                     modifier = Modifier
                         .weight(1f, fill = false)
@@ -919,11 +928,20 @@ private fun GameInfoBox(
                     //提示信息
                     Column(
                         modifier = Modifier.weight(1f, fill = false),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.game_loading),
-                            style = MaterialTheme.typography.bodyLarge
+                            text = "SYS // BOOT SEQUENCE",
+                            color = AfAccent,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.5.sp
+                        )
+                        Text(
+                            text = "AFLECK ENGINE",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Italic
                         )
                         Text(
                             text = stringResource(R.string.game_loading_version_name, versionName),
@@ -935,6 +953,16 @@ private fun GameInfoBox(
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 6.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.game_loading),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = AfDim
+                        )
                     }
                 }
 

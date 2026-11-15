@@ -18,6 +18,7 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
@@ -53,6 +54,16 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfDim
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -157,9 +168,20 @@ fun GamePathItemLayout(
 ) {
     val notDefault = item.id != GamePathManager.DEFAULT_ID
 
+    val afShape = AfCutShape(10.dp)
     NavigationDrawerItem(
-        modifier = modifier,
-        colors = NavigationDrawerItemDefaults.colors(),
+        modifier = modifier.afGlowPath(afShape, selected),
+        shape = afShape,
+        colors = NavigationDrawerItemDefaults.colors(
+            selectedContainerColor = AfAccent.copy(alpha = 0.16f),
+            unselectedContainerColor = AfNavy.copy(alpha = 0.35f),
+            selectedTextColor = AfText,
+            unselectedTextColor = AfText,
+            selectedIconColor = AfAccent,
+            unselectedIconColor = AfAccent,
+            selectedBadgeColor = AfText,
+            unselectedBadgeColor = AfText
+        ),
         label = {
             Column(
                 modifier = Modifier
@@ -241,6 +263,9 @@ fun GamePathItemLayout(
     )
 }
 
+private fun Modifier.afGlowPath(shape: Shape, selected: Boolean): Modifier =
+    this.afGlow(shape, if (selected) AfAccent else AfBorder, if (selected) 1.4f else 0.5f)
+
 @Composable
 fun GamePathOperation(
     gamePathOperation: GamePathOperation,
@@ -317,33 +342,37 @@ fun VersionCategoryItem(
     value: VersionCategory,
     versionsCount: Int,
     selected: Boolean,
-    shape: Shape = MaterialTheme.shapes.large,
+    shape: Shape = AfCutShape(9.dp),
     selectedContentColor: Color = MaterialTheme.colorScheme.onSurface,
     unselectedContentColor: Color = MaterialTheme.colorScheme.onSurface,
     style: TextStyle = MaterialTheme.typography.labelMedium,
     enabled: Boolean = true,
     onClick: () -> Unit = {}
 ) {
-    TextRailItem(
-        modifier = modifier,
-        text = {
-            Text(
-                text = stringResource(value.textRes),
-                style = style
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "($versionsCount)",
-                style = style
-            )
-        },
-        onClick = onClick,
-        selected = selected,
-        shape = shape,
-        selectedContentColor = selectedContentColor,
-        unselectedContentColor = unselectedContentColor,
-        enabled = enabled
-    )
+    val accent = AfAccent
+    val border = AfBorder
+    val navy = AfNavy
+    androidx.compose.foundation.layout.Row(
+        modifier = modifier
+            .afGlow(shape, if (selected) accent else border, if (selected) 1.5f else 0.5f)
+            .clip(shape)
+            .background(if (selected) accent.copy(alpha = 0.18f) else navy.copy(alpha = 0.35f))
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(value.textRes),
+            style = style,
+            color = if (selected) accent else AfText
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "· $versionsCount",
+            style = style,
+            color = if (selected) accent else AfDim
+        )
+    }
 }
 
 @Composable
@@ -698,11 +727,15 @@ fun VersionItemLayout(
     LaunchedEffect(Unit) {
         scale.animateTo(targetValue = 1f, animationSpec = getAnimateTween())
     }
+    val afShape = AfCutShape(12.dp)
     Surface(
-        modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value),
-        color = color,
-        contentColor = contentColor,
-        shape = MaterialTheme.shapes.large,
+        modifier = modifier
+            .graphicsLayer(scaleY = scale.value, scaleX = scale.value)
+            .afGlowPath(afShape, selected),
+        color = if (selected) AfAccent.copy(alpha = 0.12f)
+                else AfNavy.copy(alpha = 0.35f),
+        contentColor = AfText,
+        shape = afShape,
         onClick = {
             if (selected) return@Surface
             onSelected()
@@ -711,8 +744,7 @@ fun VersionItemLayout(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(shape = MaterialTheme.shapes.large)
-                .backgroundGlass(blur, color, influencedByBackground)
+                .clip(shape = afShape)
                 .padding(all = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

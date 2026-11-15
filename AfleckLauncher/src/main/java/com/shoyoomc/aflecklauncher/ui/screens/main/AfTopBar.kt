@@ -48,9 +48,9 @@ fun AfTopBar(
     ) {
         Pill(onClick = onLogo) {
             Box(
-                Modifier.size(42.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(AfAccent, AfAccent2))),
+                Modifier.size(42.dp).afGlow(CircleShape, AfAccent, 1.2f).clip(CircleShape).background(AfAccent.copy(alpha = 0.16f)),
                 contentAlignment = Alignment.Center
-            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfNavy, modifier = Modifier.size(26.dp)) }
+            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(26.dp)) }
             Spacer(Modifier.width(10.dp))
             Column {
                 Text("Afleck", color = AfText, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1)
@@ -59,9 +59,9 @@ fun AfTopBar(
         }
         Pill {
             Box(
-                Modifier.size(38.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(AfAccent, AfAccent2))),
+                Modifier.size(38.dp).afGlow(CircleShape, AfAccent, 1.2f).clip(CircleShape).background(AfAccent.copy(alpha = 0.16f)),
                 contentAlignment = Alignment.Center
-            ) { Text("❄", color = AfNavy, fontSize = 20.sp) }
+            ) { Text("❄", color = AfAccent, fontSize = 20.sp) }
             Spacer(Modifier.width(10.dp))
             Text(sectionTitle, color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
@@ -85,8 +85,7 @@ fun AfTopBar(
 @Composable
 private fun Pill(onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit) {
     Row(
-        modifier = Modifier.clip(CircleShape).background(AfPanelDeep)
-            .border(1.5.dp, AfBorder, CircleShape)
+        modifier = Modifier.afGlow(AfCutShape(12.dp), AfBorder, 0.8f).clip(AfCutShape(12.dp)).background(AfNavy.copy(alpha = 0.45f))
             .then(if (onClick != null) Modifier.afClick(onClick) else Modifier)
             .padding(start = 5.dp, end = 16.dp, top = 5.dp, bottom = 5.dp),
         verticalAlignment = Alignment.CenterVertically,

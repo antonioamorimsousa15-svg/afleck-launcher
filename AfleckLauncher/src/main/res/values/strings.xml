@@ -790,6 +790,7 @@
     <string name="game_menu_option_fps_display_mode_chart">Chart</string>
     <!-- Switch in the in-game menu to show the memory usage overlay -->
     <string name="game_menu_option_switch_memory">Memory Display</string>
+    <string name="game_menu_option_switch_gpu_cpu">CPU / GPU usage</string>
     <!-- Slider in the in-game menu for the opacity of the floating menu overlay -->
     <string name="game_menu_option_menu_ball_opacity">Menu Overlay Opacity</string>
     <!-- Button in the in-game menu opening a dialog to send a keycode to the game -->

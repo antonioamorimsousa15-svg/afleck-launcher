@@ -346,6 +346,18 @@ private fun GameActionContent(
                 enabled = AllSettings.showMenuBall.state
             )
         }
+        //CPU / GPU 使用率显示
+        item {
+            MenuSwitchButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.game_menu_option_switch_gpu_cpu),
+                switch = AllSettings.showGpuCpu.state,
+                onSwitch = { AllSettings.showGpuCpu.save(it) },
+                color = color,
+                contentColor = contentColor,
+                enabled = AllSettings.showMenuBall.state
+            )
+        }
         //请求最高刷新率
         item {
             MenuSwitchButton(

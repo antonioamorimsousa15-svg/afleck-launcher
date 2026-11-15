@@ -300,6 +300,7 @@
     <string name="game_menu_option_input_method">Cambiar método de entrada</string>
     <string name="game_menu_option_switch_fps">Visualización de FPS</string>
     <string name="game_menu_option_switch_memory">Visualización de memoria</string>
+    <string name="game_menu_option_switch_gpu_cpu">CPU / GPU usage</string>
     <string name="game_menu_option_send_keycode">Enviar código de tecla</string>
     <string name="game_menu_option_replacement_control">Reemplazar diseño de controles</string>
     <string name="download_addon_category_information">HUD e información</string>

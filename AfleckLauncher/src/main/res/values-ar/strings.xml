@@ -343,6 +343,7 @@
     <string name="game_menu_option_input_method">تبديل طريقة الإدخال</string>
     <string name="game_menu_option_switch_fps">عرض FPS</string>
     <string name="game_menu_option_switch_memory">عرض الذاكرة</string>
+    <string name="game_menu_option_switch_gpu_cpu">CPU / GPU usage</string>
     <string name="game_menu_option_menu_ball_opacity">شفافية تراكب القائمة</string>
     <string name="game_menu_option_send_keycode">إرسال رمز التشفير</string>
     <string name="game_menu_option_replacement_control">استبدال تخطيط التحكم</string>

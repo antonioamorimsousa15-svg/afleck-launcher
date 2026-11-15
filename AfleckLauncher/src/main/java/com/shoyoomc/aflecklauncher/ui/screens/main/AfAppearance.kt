@@ -57,16 +57,16 @@ fun AfAppearance(bgSlot: AfImageSlot, onClose: () -> Unit) {
                     AfThemeState.themes.forEach { t ->
                         val selected = t.id == AfThemeState.themeId
                         Column(
-                            Modifier.width(120.dp).clip(RoundedCornerShape(18.dp))
+                            Modifier.width(120.dp).clip(AfCutShape(12.dp))
                                 .background(AfNavy.copy(alpha = 0.6f))
-                                .border(if (selected) 3.dp else 1.dp, if (selected) AfBorder else AfDim.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+                                .border(if (selected) 3.dp else 1.dp, if (selected) AfBorder else AfDim.copy(alpha = 0.4f), AfCutShape(12.dp))
                                 .afClick { AfThemeState.chooseTheme(t.id) }
                                 .padding(8.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Image(
                                 painterResource(t.bg), null, contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxWidth().height(64.dp).clip(RoundedCornerShape(12.dp))
+                                modifier = Modifier.fillMaxWidth().height(64.dp).clip(AfCutShape(8.dp))
                             )
                             Box(
                                 Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp))

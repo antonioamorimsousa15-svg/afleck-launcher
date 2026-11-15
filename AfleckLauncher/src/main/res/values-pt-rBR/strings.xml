@@ -370,6 +370,7 @@
     <string name="game_menu_option_input_method">Teclado virtual</string>
     <string name="game_menu_option_switch_fps">Contador de FPS</string>
     <string name="game_menu_option_switch_memory">Mostrar o uso da memória RAM</string>
+    <string name="game_menu_option_switch_gpu_cpu">Mostrar uso de CPU e GPU</string>
     <string name="game_menu_option_menu_ball_opacity">Opacidade do menu flutuante</string>
     <string name="game_menu_option_send_keycode">Enviar Tecla</string>
     <string name="game_menu_option_hotbar_rule">Regra de Posicionamento da Barra de Atalhos</string>

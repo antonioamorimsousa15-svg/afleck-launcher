@@ -18,6 +18,7 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.game.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
@@ -44,6 +45,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.getValue
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
@@ -66,6 +73,7 @@ fun DraggableGameBall(
     fpsMax: () -> Int,
     fpsMin: () -> Int,
     showMemory: Boolean,
+    showUsage: Boolean = false,
     opened: Boolean,
     alpha: Float = 1f,
     onClick: () -> Unit = {}
@@ -78,7 +86,9 @@ fun DraggableGameBall(
         onPositionChanged = onPositionChanged,
         onSavePos = onSavePos,
         onClick = onClick,
-        alpha = alpha
+        alpha = alpha,
+        color = AfNavy.copy(alpha = 0.55f),
+        shape = AfCutShape(10.dp)
     ) {
         GameBallContent(
             gameFps = gameFps,
@@ -87,6 +97,7 @@ fun DraggableGameBall(
             fpsMax = fpsMax,
             fpsMin = fpsMin,
             showMemory = showMemory,
+            showUsage = showUsage,
             opened = opened,
         )
     }
@@ -100,6 +111,7 @@ private fun GameBallContent(
     fpsMax: () -> Int,
     fpsMin: () -> Int,
     showMemory: Boolean,
+    showUsage: Boolean,
     opened: Boolean,
 ) {
     val fps = gameFps()
@@ -111,8 +123,12 @@ private fun GameBallContent(
         fps != null
     }
 
+    val usage by rememberSystemUsage(showUsage)
+
     Row(
-        modifier = Modifier.padding(all = 2.dp),
+        modifier = Modifier
+            .border(1.5.dp, AfAccent, AfCutShape(10.dp))
+            .padding(horizontal = 6.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val showIcon = !(showMemory || (showFps && fpsDisplayMode == FpsDisplayMode.CHART))
@@ -124,24 +140,17 @@ private fun GameBallContent(
                 modifier = Modifier.size(28.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Crossfade(opened) { state ->
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(
-                            if (state) {
-                                R.drawable.ic_menu_open
-                            } else {
-                                R.drawable.ic_menu
-                            }
-                        ),
-                        contentDescription = null
-                    )
-                }
+                Icon(
+                    modifier = Modifier.size(22.dp),
+                    painter = painterResource(R.drawable.ic_af_bolt),
+                    tint = if (opened) AfAccent else AfText,
+                    contentDescription = null
+                )
             }
         }
 
         AnimatedVisibility(
-            visible = showFps || showMemory
+            visible = showFps || showMemory || showUsage
         ) {
             Spacer(Modifier.width(4.dp))
         }
@@ -154,7 +163,7 @@ private fun GameBallContent(
                 .width(IntrinsicSize.Max)
         ) {
             CustomAnimatedVisibility(
-                visible = showFps || showMemory
+                visible = showFps || showMemory || showUsage
             ) {
                 Spacer(Modifier.height(4.dp))
             }
@@ -201,7 +210,22 @@ private fun GameBallContent(
                 )
             }
             CustomAnimatedVisibility(
-                visible = showFps || showMemory
+                visible = showUsage && (showFps || showMemory)
+            ) {
+                Spacer(Modifier.height(4.dp))
+            }
+            //CPU / GPU
+            CustomAnimatedVisibility(
+                visible = showUsage
+            ) {
+                Text(
+                    modifier = Modifier.padding(end = 4.dp),
+                    text = "CPU ${usage.cpu}%   GPU ${usage.gpu?.let { "$it%" } ?: "--"}",
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+            CustomAnimatedVisibility(
+                visible = showFps || showMemory || showUsage
             ) {
                 Spacer(Modifier.height(4.dp))
             }

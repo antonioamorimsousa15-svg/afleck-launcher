@@ -38,7 +38,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
+import com.shoyoomc.aflecklauncher.ui.components.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
@@ -53,6 +53,18 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfPanel
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfOutlineButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfIconCircle
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfDim
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
+import com.shoyoomc.aflecklauncher.ui.screens.main.afClick
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -292,6 +304,7 @@ fun VersionsManageScreen(
                 changePathOperation = {
                     viewModel.gamePathOperation = it
                 },
+                onImportModpack = { backScreenViewModel.navigateToDownload() },
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(2.5f)
@@ -355,26 +368,36 @@ private fun LeftMenu(
     swapToFileSelector: (path: String) -> Unit,
     onCleanupGameFiles: () -> Unit,
     changePathOperation: (GamePathOperation) -> Unit,
+    onImportModpack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val ctx = rememberAnimatedContext(isVisible = isVisible)
 
-    Column(
-        modifier = modifier.animated(ctx, from = AnimatedDirection.Left),
+    AfPanel(
+        modifier = modifier
+            .animated(ctx, from = AnimatedDirection.Left)
+            .padding(start = 12.dp, top = 12.dp, bottom = 12.dp),
+        radius = 24.dp
     ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         val gamePaths by GamePathManager.gamePathData.collectAsStateWithLifecycle()
         val currentPath by GamePathManager.currentPath.collectAsStateWithLifecycle()
         val context = LocalContext.current
+
+        Column(modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 6.dp)) {
+            Text(
+                "HANGAR // DIRETÓRIOS", color = AfAccent,
+                fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp
+            )
+            Text("${gamePaths.size} pastas de jogo", color = AfDim, fontSize = 11.sp)
+        }
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentPadding = PaddingValues(
-                start = 12.dp,
-                top = 12.dp,
-                bottom = 12.dp
-            )
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(gamePaths, key = { it.id }) { pathItem ->
                 GamePathItemLayout(
@@ -409,36 +432,43 @@ private fun LeftMenu(
             }
         }
 
-        ScalingActionButton(
-            modifier = Modifier
-                .padding(start = 12.dp)
-                .padding(top = 8.dp)
-                .fillMaxWidth(),
-            onClick = {
-                (context as? MainActivity)?.let { activity ->
-                    checkStoragePermissions(
-                        activity = activity,
-                        message = activity.getString(R.string.versions_manage_game_path_storage_permissions),
-                        messageSdk30 = activity.getString(R.string.versions_manage_game_path_storage_permissions_sdk30),
-                        hasPermission = {
-                            swapToFileSelector(Environment.getExternalStorageDirectory().absolutePath)
+        Column(
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            AfButton(
+                text = "Importar ModPack",
+                icon = R.drawable.ic_download,
+                modifier = Modifier.fillMaxWidth().height(44.dp),
+                onClick = onImportModpack
+            )
+            AfOutlineButton(
+                text = "Nova pasta",
+                icon = R.drawable.ic_folder_filled,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    if (canHandlePermission) {
+                        (context as? MainActivity)?.let { activity ->
+                            checkStoragePermissions(
+                                activity = activity,
+                                message = activity.getString(R.string.versions_manage_game_path_storage_permissions),
+                                messageSdk30 = activity.getString(R.string.versions_manage_game_path_storage_permissions_sdk30),
+                                hasPermission = {
+                                    swapToFileSelector(Environment.getExternalStorageDirectory().absolutePath)
+                                }
+                            )
                         }
-                    )
+                    }
                 }
-            },
-            enabled = canHandlePermission
-        ) {
-            MarqueeText(text = stringResource(R.string.versions_manage_game_path_add_new))
+            )
+            AfOutlineButton(
+                text = "Limpar arquivos",
+                icon = R.drawable.ic_delete_filled,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onCleanupGameFiles
+            )
         }
-
-        ScalingActionButton(
-            modifier = Modifier
-                .padding(start = 12.dp, top = 8.dp, bottom = 12.dp)
-                .fillMaxWidth(),
-            onClick = onCleanupGameFiles
-        ) {
-            MarqueeText(text = stringResource(R.string.versions_manage_cleanup))
-        }
+    }
     }
 }
 
@@ -598,80 +628,62 @@ private fun VersionsLayout(
                             .padding(all = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        val blur = AllSettings.backgroundBlur.state
-                        val cardColor = cardColor()
-
-                        Surface(
-                            modifier = Modifier
-                                .height(IntrinsicSize.Max)
-                                .then(barShadowModifier),
-                            color = cardColor,
-                            contentColor = onCardColor(),
-                            shape = MaterialTheme.shapes.large,
+                        AfPanel(
+                            modifier = Modifier.fillMaxWidth(),
+                            radius = 24.dp
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .backgroundGlass(blur, cardColor)
-                                    .padding(all = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                IconTextButton(
-                                    onClick = onRefresh,
-                                    painter = painterResource(R.drawable.ic_refresh),
-                                    contentDescription = stringResource(R.string.generic_refresh),
-                                    text = stringResource(R.string.generic_refresh)
-                                )
-                                IconTextButton(
-                                    onClick = onInstall,
-                                    painter = painterResource(R.drawable.ic_download),
-                                    contentDescription = stringResource(R.string.versions_manage_install_new),
-                                    text = stringResource(R.string.versions_manage_install_new),
-                                )
-                            }
-                        }
-
-                        // 版本分类
-                        Surface(
-                            modifier = Modifier
-                                .weight(1f, fill = false)
-                                .height(IntrinsicSize.Max)
-                                .then(barShadowModifier),
-                            color = cardColor,
-                            contentColor = onCardColor(),
-                            shape = MaterialTheme.shapes.large,
-                        ) {
-                            val scrollState = rememberScrollState()
-                            Row(
-                                modifier = Modifier
-                                    .backgroundGlass(blur, cardColor)
-                                    .fadeEdge(
-                                        state = scrollState,
-                                        length = 32.dp,
-                                        direction = EdgeDirection.Horizontal
+                                Column {
+                                    Text(
+                                        "VERSIONS // DECK", color = AfAccent,
+                                        fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp
                                     )
-                                    .horizontalScroll(state = scrollState)
-                                    .padding(all = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                VersionCategoryItem(
-                                    value = VersionCategory.ALL,
-                                    versionsCount = allVersionsCount,
-                                    selected = versionCategory == VersionCategory.ALL,
-                                    onClick = { onCategoryChange(VersionCategory.ALL) }
+                                    Text("$allVersionsCount versões instaladas", color = AfText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                }
+                                val scrollState = rememberScrollState()
+                                Row(
+                                    modifier = Modifier
+                                        .weight(1f, fill = false)
+                                        .horizontalScroll(state = scrollState),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    VersionCategoryItem(
+                                        value = VersionCategory.ALL,
+                                        versionsCount = allVersionsCount,
+                                        selected = versionCategory == VersionCategory.ALL,
+                                        onClick = { onCategoryChange(VersionCategory.ALL) }
+                                    )
+                                    VersionCategoryItem(
+                                        value = VersionCategory.VANILLA,
+                                        versionsCount = vanillaVersionsCount,
+                                        selected = versionCategory == VersionCategory.VANILLA,
+                                        onClick = { onCategoryChange(VersionCategory.VANILLA) }
+                                    )
+                                    VersionCategoryItem(
+                                        value = VersionCategory.MODLOADER,
+                                        versionsCount = modloaderVersionsCount,
+                                        selected = versionCategory == VersionCategory.MODLOADER,
+                                        onClick = { onCategoryChange(VersionCategory.MODLOADER) }
+                                    )
+                                }
+                                Spacer(Modifier.weight(1f))
+                                AfIconCircle(
+                                    icon = R.drawable.ic_refresh,
+                                    size = 38.dp,
+                                    modifier = Modifier.afClick(onRefresh)
                                 )
-                                VersionCategoryItem(
-                                    value = VersionCategory.VANILLA,
-                                    versionsCount = vanillaVersionsCount,
-                                    selected = versionCategory == VersionCategory.VANILLA,
-                                    onClick = { onCategoryChange(VersionCategory.VANILLA) }
-                                )
-                                VersionCategoryItem(
-                                    value = VersionCategory.MODLOADER,
-                                    versionsCount = modloaderVersionsCount,
-                                    selected = versionCategory == VersionCategory.MODLOADER,
-                                    onClick = { onCategoryChange(VersionCategory.MODLOADER) }
+                                AfButton(
+                                    text = "Instalar",
+                                    icon = R.drawable.ic_download,
+                                    modifier = Modifier.height(40.dp),
+                                    onClick = onInstall
                                 )
                             }
                         }

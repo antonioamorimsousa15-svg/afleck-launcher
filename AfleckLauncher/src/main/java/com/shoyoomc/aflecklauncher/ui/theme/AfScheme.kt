@@ -1,5 +1,6 @@
 package com.shoyoomc.aflecklauncher.ui.theme
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Shapes
@@ -60,9 +61,9 @@ fun afColorScheme(): ColorScheme {
 
 /** Formato retangular com bordas bem arredondadas, em todo o app. */
 fun afShapes() = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp)
+    extraSmall = AfCutShape(6.dp),
+    small = AfCutShape(8.dp),
+    medium = AfCutShape(10.dp),
+    large = AfCutShape(14.dp),
+    extraLarge = AfCutShape(18.dp)
 )
