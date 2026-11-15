@@ -56,7 +56,6 @@ fun AfSidebar(
             NavPill(R.drawable.ic_download_2_filled, "Download", inDownload, onDownload)
             NavPill(R.drawable.ic_person_filled, "Contas", inAccounts, onAccounts)
             NavPill(R.drawable.ic_settings_filled, "Ajustes", inSettings, onSettings)
-            NavPill(R.drawable.ic_checkroom, "Aparência", inAppearance, onAppearance)
         }
     }
 }

@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.download.addon.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -119,8 +121,8 @@ fun FavoriteIdentifier(
         LocalMinimumInteractiveComponentSize provides 0.dp,
     ) {
         Surface(
-            modifier = modifier,
-            color = color,
+            modifier = modifier.afGlow(shape, AfBorder, 0.6f),
+            color = androidx.compose.ui.graphics.Color.Transparent,
             contentColor = contentColor,
             shape = shape,
             onClick = onClick

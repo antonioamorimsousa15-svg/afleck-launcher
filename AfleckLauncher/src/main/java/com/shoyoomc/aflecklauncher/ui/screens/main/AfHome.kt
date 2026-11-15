@@ -1,5 +1,6 @@
 package com.shoyoomc.aflecklauncher.ui.screens.main
 
+import com.shoyoomc.aflecklauncher.ui.screens.content.elements.VersionIconImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,32 +55,27 @@ fun AfHome(
     onOpenSettings: () -> Unit,
     onOpenAppearance: () -> Unit,
 ) {
-    val homeSlot = rememberAfSlot("home")
     val slot916 = rememberAfSlot("card916")
-    val shadersSlot = rememberAfSlot("shaders")
-    val modsSlot = rememberAfSlot("mods")
+    val bgSlot = rememberAfSlot("bg")
     var dialog by remember { mutableStateOf<String?>(null) }
 
     Box(Modifier.fillMaxSize()) {
-        AfSlotImage(homeSlot, null, Modifier.fillMaxSize())
         AfHomeContent(
             onPlay, onOpenVersions, onOpenAccounts, onOpenDownload, onOpenSettings, onOpenAppearance,
-            slot916, shadersSlot, modsSlot, onEdit = { dialog = it }
+            slot916, onEdit = { dialog = it }
         )
     }
     when (dialog) {
         "home" -> AfSlotDialog(
-            "Wallpaper do painel inicial",
-            "Imagem ou GIF só para este painel. A opacidade daqui é separada do fundo do Launcher.",
-            homeSlot
+            "Fundo do Launcher",
+            "Imagem de fundo de todo o Launcher.",
+            bgSlot
         ) { dialog = null }
         "card916" -> AfSlotDialog(
             "Wallpaper 9:16",
             "Imagem ou GIF só para o quadro 9:16 da tela inicial. A opacidade daqui é separada das outras.",
             slot916
         ) { dialog = null }
-        "shaders" -> AfSlotDialog("Imagem de Shaders", "Imagem do cartão de Shaders.", shadersSlot) { dialog = null }
-        "mods" -> AfSlotDialog("Imagem de Mods", "Imagem do cartão de Mods.", modsSlot) { dialog = null }
     }
 }
 
@@ -92,12 +88,11 @@ private fun AfHomeContent(
     onOpenSettings: () -> Unit,
     onOpenAppearance: () -> Unit,
     slot916: AfImageSlot,
-    shadersSlot: AfImageSlot,
-    modsSlot: AfImageSlot,
     onEdit: (String) -> Unit,
 ) {
     val account by AccountsManager.currentAccountFlow.collectAsState()
     val current by VersionsManager.currentVersion.collectAsState()
+    val allVersions by VersionsManager.versions.collectAsState()
     val userName = account?.username
 
     Column(
@@ -189,16 +184,65 @@ private fun AfHomeContent(
         }
         // ---------- Linha de baixo ----------
         Row(Modifier.fillMaxWidth().height(184.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            PromoCard(
-                Modifier.weight(1.6f).fillMaxHeight(), R.drawable.ic_package_2_outlined, "Shaders", "Ver todas ›",
-                "Deixe seu mundo mais bonito com shaders.", "Explorar ›", onOpenDownload,
-                shadersSlot
-            ) { onEdit("shaders") }
-            PromoCard(
-                Modifier.weight(1.25f).fillMaxHeight(), R.drawable.ic_extension_outlined, "Mods", null,
-                "Turbine suas versões com mods novos.", "Ver mods ›", onOpenDownload,
-                modsSlot
-            ) { onEdit("mods") }
+            // Suas versões
+            AfPanel(Modifier.weight(1.6f).fillMaxHeight()) {
+                Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_package_2_outlined), null, tint = AfAccent, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Suas versões", color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text("Ver todas ›", color = AfAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.afClick(onOpenVersions))
+                    }
+                    val first = allVersions.firstOrNull()
+                    if (first == null) {
+                        Text("Nenhuma versão instalada.", color = AfDim, fontSize = 13.sp)
+                        Spacer(Modifier.weight(1f))
+                        AfButton("Baixar", Modifier.fillMaxWidth(), null, onOpenDownload)
+                    } else {
+                        allVersions.take(2).forEach { v ->
+                            val shape = AfCutShape(10.dp)
+                            Row(
+                                Modifier.fillMaxWidth().afGlow(shape, AfBorder, 0.6f).padding(horizontal = 8.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                VersionIconImage(v, Modifier.size(34.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(v.getVersionName(), color = AfText, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Text(runCatching { v.getVersionSummary() }.getOrDefault(""), color = AfDim, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                }
+                                Box(Modifier.afClick { onPlay(v) }) { AfIconCircle(R.drawable.ic_play_arrow_filled, size = 34.dp) }
+                            }
+                        }
+                    }
+                }
+            }
+            // Versão do Minecraft
+            AfPanel(Modifier.weight(1.25f).fillMaxHeight()) {
+                Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_sports_esports_outlined), null, tint = AfAccent, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Versão do Minecraft", color = AfText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    }
+                    Row(Modifier.weight(1f).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        VersionIconImage(current, Modifier.size(46.dp))
+                        Spacer(Modifier.width(10.dp))
+                        Column {
+                            Text(current?.getVersionName() ?: "Nenhuma", color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(
+                                current?.let { runCatching { it.getVersionSummary() }.getOrDefault("") } ?: "Escolha uma versão",
+                                color = AfDim, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (current != null) AfButton("JOGAR", Modifier.weight(1f), R.drawable.ic_play_arrow_filled) { current?.let(onPlay) }
+                        else AfButton("ESCOLHER", Modifier.weight(1f), null, onOpenVersions)
+                        Box(Modifier.afClick(onOpenVersions)) { AfIconCircle(R.drawable.ic_settings_filled, size = 40.dp) }
+                    }
+                }
+            }
             // Configurações Rápidas
             AfPanel(Modifier.weight(1.5f).fillMaxHeight()) {
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -216,47 +260,6 @@ private fun AfHomeContent(
                         QuickTile(Modifier.weight(1f), R.drawable.ic_package_2_outlined, "Aparência", onOpenAppearance)
                         QuickTile(Modifier.weight(1f), R.drawable.ic_person_filled, "Contas", onOpenAccounts)
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PromoCard(
-    modifier: Modifier, icon: Int, title: String, seeAll: String?, text: String, buttonText: String, onClick: () -> Unit,
-    slot: AfImageSlot, onEdit: () -> Unit
-) {
-    AfPanel(modifier) {
-        Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(painterResource(icon), null, tint = AfAccent, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(title, color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                if (seeAll != null) {
-                    Text(seeAll, color = AfAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.afClick(onClick))
-                    Spacer(Modifier.width(8.dp))
-                }
-                Box(Modifier.afClick(onEdit)) { AfIconCircle(R.drawable.ic_edit_outlined, size = 34.dp) }
-            }
-            Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(
-                    Modifier.fillMaxHeight().aspectRatio(1f).clip(AfCutShape(12.dp))
-                        .background(Brush.verticalGradient(listOf(AfNavy, AfPanelDeep)))
-                        .border(1.5.dp, AfBorder, AfCutShape(12.dp))
-                        .afClick(onEdit),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (slot.uri == null) {
-                        Icon(painterResource(R.drawable.ic_image_outlined), null, tint = AfBorder, modifier = Modifier.size(30.dp))
-                    } else {
-                        AfSlotImage(slot, null, Modifier.fillMaxSize())
-                    }
-                }
-                Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(text, color = AfText, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                    Spacer(Modifier.weight(1f))
-                    AfButton(buttonText, Modifier.fillMaxWidth(), null, onClick)
                 }
             }
         }

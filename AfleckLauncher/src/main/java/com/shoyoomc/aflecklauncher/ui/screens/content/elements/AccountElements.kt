@@ -18,6 +18,12 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -319,11 +325,14 @@ fun AccountItem(
     LaunchedEffect(Unit) {
         scale.animateTo(targetValue = 1f, animationSpec = getAnimateTween())
     }
+    val afShape = AfCutShape(12.dp)
     Surface(
-        modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value),
-        color = color,
-        contentColor = contentColor,
-        shape = MaterialTheme.shapes.large,
+        modifier = modifier
+            .graphicsLayer(scaleY = scale.value, scaleX = scale.value)
+            .afGlow(afShape, if (selected) AfAccent else AfBorder, if (selected) 1.5f else 0.6f),
+        color = if (selected) AfAccent.copy(alpha = 0.10f) else AfNavy.copy(alpha = 0.35f),
+        contentColor = AfText,
+        shape = afShape,
         onClick = {
             if (selected || !enabled) return@Surface
             onSelected(account)
@@ -333,7 +342,7 @@ fun AccountItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(shape = MaterialTheme.shapes.large)
+                .clip(shape = afShape)
                 .padding(all = 8.dp)
         ) {
             RadioButton(
@@ -356,10 +365,15 @@ fun AccountItem(
                     .align(Alignment.CenterVertically)
                     .weight(1f)
             ) {
-                Text(text = account.username)
+                Text(text = account.username, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = getAccountTypeName(account),
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AfAccent,
+                    modifier = Modifier
+                        .afGlow(androidx.compose.foundation.shape.CircleShape, AfBorder, 0.6f)
+                        .padding(horizontal = 10.dp, vertical = 2.dp)
                 )
             }
             Row {

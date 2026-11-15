@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.download.game
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -221,9 +223,9 @@ fun <E> AddonListLayout(
     }
 
     Surface(
-        modifier = modifier,
+        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
         shape = shape,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor
     ) {
         Column(
@@ -444,9 +446,9 @@ fun AddonWarningItem(
     blur: Int = AllSettings.backgroundBlur.state,
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.afGlow(MaterialTheme.shapes.large, AfBorder, 0.6f),
         shape = MaterialTheme.shapes.large,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor
     ) {
         Row(

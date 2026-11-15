@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.download.addon.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -235,9 +237,9 @@ fun AddonVersionItemLayout(
     var expanded by remember(infoMap) { mutableStateOf(defaultExpanded) }
 
     Surface(
-        modifier = modifier,
+        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
         shape = shape,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor
     ) {
         Column(

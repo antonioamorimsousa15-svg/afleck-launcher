@@ -348,6 +348,12 @@ class MainActivity : BaseAppCompatActivity() {
                         viewModel = backgroundViewModel
                     )
 
+                    androidx.compose.runtime.CompositionLocalProvider(
+                        androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(
+                            density = androidx.compose.ui.platform.LocalDensity.current.density * 0.8f,
+                            fontScale = androidx.compose.ui.platform.LocalDensity.current.fontScale
+                        )
+                    ) {
                     MainScreen(
                         screenBackStackModel = screenBackStackModel,
                         eventViewModel = eventViewModel,
@@ -357,6 +363,7 @@ class MainActivity : BaseAppCompatActivity() {
                             errorViewModel.showError(it)
                         }
                     )
+                    }
 
                     //节日彩蛋效果层
                     FestivalEffects(

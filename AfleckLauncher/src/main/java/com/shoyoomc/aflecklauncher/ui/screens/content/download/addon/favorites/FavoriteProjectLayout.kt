@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.download.addon.favorites
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -102,9 +104,9 @@ fun FavoriteProjectLayout(
     }
 
     Surface(
-        modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value),
+        modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value).afGlow(shape, AfBorder, 0.6f),
         shape = shape,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor,
         onClick = onClick.takeIf { !invalid } ?: {}
     ) {

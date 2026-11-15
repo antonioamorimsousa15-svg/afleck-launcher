@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.download.addon.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.annotation.StringRes
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.Orientation
@@ -466,9 +468,9 @@ private fun SelectVersionListItem(
     contentColor: Color = onItemColor(),
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
         shape = shape,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor,
         onClick = {
             if (checked) {
@@ -582,9 +584,9 @@ private fun AddonUnavailableDependencyItem(
     contentColor: Color = onItemColor(),
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
         shape = shape,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor,
     ) {
         Column(
@@ -658,10 +660,10 @@ private fun AddonVersionDependencyItem(
     val classes = remember { project.platformClasses(defaultClasses) }
 
     Surface(
-        modifier = modifier,
+        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
         onClick = onClick,
         shape = shape,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor,
     ) {
         Row(

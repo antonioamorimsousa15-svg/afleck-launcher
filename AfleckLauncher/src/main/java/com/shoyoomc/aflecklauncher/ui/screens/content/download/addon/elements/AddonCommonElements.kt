@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.download.addon.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -193,8 +195,8 @@ private fun BasicIdentifier(
     textStyle: TextStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
 ) {
     Surface(
-        modifier = modifier,
-        color = color,
+        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor,
         shape = shape
     ) {
@@ -297,8 +299,8 @@ fun PackIdentifier(
     textStyle: TextStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)
 ) {
     Surface(
-        modifier = modifier,
-        color = color,
+        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor,
         shape = shape
     ) {

@@ -18,6 +18,7 @@
 
 package com.shoyoomc.aflecklauncher.ui.components
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
 import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
@@ -61,7 +62,7 @@ fun BackgroundCard(
     influencedByBackground: Boolean = true,
     shape: Shape = com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape(14.dp),
     colors: CardColors = CardDefaults.cardColors(
-        containerColor = cardColor(influencedByBackground),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = onCardColor()
     ),
     elevation: CardElevation = flatCardElevation(),
@@ -70,14 +71,13 @@ fun BackgroundCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.afHud(shape),
         shape = shape,
         colors = colors,
         elevation = elevation,
         border = border,
     ) {
         Column(
-            modifier = Modifier.backgroundGlass(blur, colors.containerColor, influencedByBackground),
             content = content
         )
     }
@@ -93,9 +93,9 @@ fun BackgroundCard(
     influencedByBackground: Boolean = true,
     shape: Shape = com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape(14.dp),
     colors: CardColors = CardDefaults.cardColors(
-        containerColor = cardColor(influencedByBackground),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = onCardColor(),
-        disabledContainerColor = cardColor(influencedByBackground)
+        disabledContainerColor = androidx.compose.ui.graphics.Color.Transparent
     ),
     elevation: CardElevation = flatCardElevation(),
     blur: Int = AllSettings.backgroundBlur.state,
@@ -105,7 +105,7 @@ fun BackgroundCard(
     content: @Composable @UiComposable ColumnScope.() -> Unit
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.afHud(shape),
         shape = shape,
         colors = colors,
         elevation = elevation,
@@ -114,7 +114,6 @@ fun BackgroundCard(
         enabled = enabled,
     ) {
         Column(
-            modifier = Modifier.backgroundGlass(blur, colors.containerColor, influencedByBackground),
             content = content
         )
     }

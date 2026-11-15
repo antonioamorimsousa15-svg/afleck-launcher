@@ -18,6 +18,18 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.sp
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfPanel
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfOutlineButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfIconCircle
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfDim
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -279,11 +291,23 @@ private fun ActionsLayout(
 ) {
     val ctx = rememberAnimatedContext(isVisible = isVisible)
 
-    Column(
+    AfPanel(
         modifier = modifier
             .animated(ctx, from = AnimatedDirection.Left)
-            .fillMaxHeight()
+            .fillMaxHeight(),
+        radius = 28.dp
     ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 8.dp)) {
+            Text(
+                "OPERADOR // CONTA ATUAL", color = AfAccent,
+                fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp
+            )
+            Text(
+                currentAccount?.username ?: "—", color = AfText,
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1
+            )
+        }
         //玩家模型预览
         val refreshWardrobe by AccountsManager.refreshWardrobe.collectAsStateWithLifecycle()
         val armModel = currentAccount?.skinModelType?.toArmModel()
@@ -303,26 +327,49 @@ private fun ActionsLayout(
                     ?.inputStream()?.use { it.readBytes() }
             }
         }
-        PetModelView(
+        Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .afGlow(AfCutShape(10.dp), AfBorder, 0.6f)
+        ) {
+        PetModelView(
+            modifier = Modifier.fillMaxSize(),
             skin = skinBytes,
             cape = capeBytes,
             arm = armModel,
             yaw = Math.toRadians(35.0).toFloat()
         )
-
-        //添加账号
-        ScalingActionButton(
-            modifier = Modifier
-                .fillMaxWidth(),
-            onClick = {
-                actions.onIntent(AccountManageIntent.UpdateLoginMenuOp(LoginMenuOperation.Login))
-            }
-        ) {
-            MarqueeText(text = stringResource(R.string.account_add_new_account))
         }
+
+        Column(
+            modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 8.dp, bottom = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            //添加账号
+            AfOutlineButton(
+                text = "+  " + stringResource(R.string.account_add_new_account),
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    actions.onIntent(AccountManageIntent.UpdateLoginMenuOp(LoginMenuOperation.Login))
+                }
+            )
+            //衣柜
+            AfOutlineButton(
+                text = stringResource(R.string.account_wardrobe),
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    val acc = currentAccount
+                    if (acc != null && acc.isSkinChangeAllowed()) {
+                        actions.onIntent(
+                            AccountManageIntent.UpdateAccountSkinOp(AccountSkinOperation.ChangeSkin(acc))
+                        )
+                    }
+                }
+            )
+        }
+    }
     }
 }
 
@@ -682,8 +729,25 @@ private fun AccountsLayout(
         actions = actions
     )
 
+    Column(modifier = modifier.animated(ctx)) {
+    AfPanel(modifier = Modifier.fillMaxWidth(), radius = 20.dp) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AfIconCircle(R.drawable.ic_person_filled, size = 30.dp)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                "CONTAS CONECTADAS", color = AfAccent,
+                fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp
+            )
+            Spacer(Modifier.weight(1f))
+            Text("${accounts.size}", color = AfDim, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+    Spacer(Modifier.height(8.dp))
     BackgroundCard(
-        modifier = modifier.animated(ctx),
+        modifier = Modifier.fillMaxWidth().weight(1f),
         shape = MaterialTheme.shapes.extraLarge
     ) {
         if (accounts.isNotEmpty()) {
@@ -744,6 +808,7 @@ private fun AccountsLayout(
                 )
             }
         }
+    }
     }
 }
 

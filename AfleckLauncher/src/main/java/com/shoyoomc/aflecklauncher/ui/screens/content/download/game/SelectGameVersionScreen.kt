@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.download.game
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.Orientation
@@ -516,10 +518,10 @@ private fun VersionItemLayout(
     val (icon, versionType, wikiUrl, summary) = getVersionComponents(version)
 
     Surface(
-        modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value),
+        modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value).afGlow(shape, AfBorder, 0.6f),
         onClick = onClick,
         shape = shape,
-        color = color,
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = contentColor
     ) {
         Row(
