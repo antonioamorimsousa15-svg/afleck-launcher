@@ -19,6 +19,39 @@
 package com.shoyoomc.aflecklauncher.ui.components
 
 import androidx.annotation.IntRange
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent2
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.afClick
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
@@ -101,97 +134,246 @@ fun SimpleTextSlider(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (shorter) {
-            IndicatorSlider(
-                value = value,
-                enabled = enabled,
-                onValueChange = { changeValue(it, false) },
-                onValueChangeFinished = onValueChangeFinished,
-                valueRange = valueRange,
-                steps = steps,
-                modifier = Modifier.weight(1f)
-            )
-        } else {
-            Slider(
-                value = value,
-                enabled = enabled,
-                onValueChange = { changeValue(it, false) },
-                onValueChangeFinished = onValueChangeFinished,
-                valueRange = valueRange,
-                steps = steps,
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Surface(
+        val labelFor = { v: Float -> getTextString(v) + (suffix ?: "") }
+        AfSlider(
+            modifier = Modifier.weight(1f),
+            value = value,
+            enabled = enabled,
+            onValueChange = { changeValue(it, false) },
+            onValueChangeFinished = onValueChangeFinished,
+            valueRange = valueRange,
+            steps = steps,
+            labelText = labelFor
+        )
+
+        Row(
             modifier = Modifier
                 .alpha(alpha = if (enabled) 1f else DisabledAlpha)
-                .padding(start = 12.dp)
-                .align(Alignment.CenterVertically),
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+                .padding(start = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                modifier = Modifier.padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp)),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    modifier = Modifier
-                        .then(
-                            if (onTextClick != null) {
-                                Modifier.clickable(enabled = enabled, onClick = onTextClick)
-                            } else Modifier
-                        )
-                ) {
-                    Text(
-                        text = getTextString(value),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                    )
-                    suffix?.let { text ->
-                        Text(text = text)
-                    }
+            if (fineTuningControl) {
+                AfStepButton(enabled = enabled, icon = R.drawable.ic_arrow_left_rounded) {
+                    val newValue = value.subtractBigDecimal(fineTuningStep)
+                    changeValue(if (newValue <= valueRange.start) valueRange.start else newValue, true)
                 }
-                if (fineTuningControl) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        enabled = enabled,
-                        modifier = Modifier.size(26.dp),
-                        onClick = {
-                            val newValue = value.subtractBigDecimal(fineTuningStep)
-                            if (newValue <= valueRange.start) {
-                                changeValue(valueRange.start, true)
-                            } else {
-                                changeValue(newValue, true)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_arrow_left_rounded),
-                            contentDescription = null
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        enabled = enabled,
-                        modifier = Modifier.size(26.dp),
-                        onClick = {
-                            val newValue = value.addBigDecimal(fineTuningStep)
-                            if (newValue >= valueRange.endInclusive) {
-                                changeValue(valueRange.endInclusive, true)
-                            } else {
-                                changeValue(newValue, true)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_arrow_right_rounded),
-                            contentDescription = null
-                        )
-                    }
+            }
+            Row(
+                modifier = Modifier
+                    .widthIn(min = 64.dp)
+                    .then(
+                        if (onTextClick != null) {
+                            Modifier.clickable(enabled = enabled, onClick = onTextClick)
+                        } else Modifier
+                    ),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = getTextString(value),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                suffix?.let { text ->
+                    Text(
+                        modifier = Modifier.padding(start = 2.dp, bottom = 3.dp),
+                        text = text,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            }
+            if (fineTuningControl) {
+                AfStepButton(enabled = enabled, icon = R.drawable.ic_arrow_right_rounded) {
+                    val newValue = value.addBigDecimal(fineTuningStep)
+                    changeValue(if (newValue >= valueRange.endInclusive) valueRange.endInclusive else newValue, true)
                 }
             }
         }
         appendContent()
+    }
+}
+
+@Composable
+private fun AfStepButton(enabled: Boolean, icon: Int, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(34.dp)
+            .afGlow(CircleShape, AfBorder, 0.7f)
+            .clip(CircleShape)
+            .then(if (enabled) Modifier.afClick(onClick) else Modifier),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+/**
+ * Barra HUD: marcas de régua em cima, linha fina com extremidades, preenchimento em degradê
+ * com brilho e seletor hexagonal, mínimo/meio/máximo embaixo.
+ */
+@Composable
+fun AfSlider(
+    modifier: Modifier = Modifier,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    enabled: Boolean = true,
+    steps: Int = 0,
+    onValueChangeFinished: (() -> Unit)? = null,
+    labelText: (Float) -> String
+) {
+    val accent = AfAccent
+    val accent2 = AfAccent2
+    val border = AfBorder
+    val textColor = LocalContentColor.current
+    val span = valueRange.endInclusive - valueRange.start
+    val frac = if (span <= 0f) 0f else ((value - valueRange.start) / span).coerceIn(0f, 1f)
+    var widthPx by remember { mutableFloatStateOf(1f) }
+    val padPx = with(LocalDensity.current) { 14.dp.toPx() }
+    val onChange by rememberUpdatedState(onValueChange)
+    val onFinish by rememberUpdatedState(onValueChangeFinished)
+
+    fun toValue(x: Float): Float {
+        val f = ((x - padPx) / (widthPx - 2 * padPx).coerceAtLeast(1f)).coerceIn(0f, 1f)
+        val snapped = if (steps > 0) {
+            val n = steps + 1
+            Math.round(f * n) / n.toFloat()
+        } else f
+        return valueRange.start + snapped * span
+    }
+
+    Column(modifier = modifier.alpha(if (enabled) 1f else DisabledAlpha)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(46.dp)
+                .onSizeChanged { widthPx = it.width.toFloat() }
+                .pointerInput(enabled, steps, valueRange) {
+                    if (!enabled) return@pointerInput
+                    detectTapGestures { pos ->
+                        onChange(toValue(pos.x))
+                        onFinish?.invoke()
+                    }
+                }
+                .pointerInput(enabled, steps, valueRange) {
+                    if (!enabled) return@pointerInput
+                    detectHorizontalDragGestures(
+                        onDragEnd = { onFinish?.invoke() },
+                        onDragCancel = { onFinish?.invoke() }
+                    ) { change, _ ->
+                        change.consume()
+                        onChange(toValue(change.position.x))
+                    }
+                }
+                .drawBehind {
+                    val w = size.width
+                    val left = padPx
+                    val right = w - padPx
+                    val trackY = size.height * 0.66f
+                    val thumbX = left + frac * (right - left)
+                    val dp1 = 1.dp.toPx()
+
+                    //régua
+                    for (i in 0..10) {
+                        val x = left + (right - left) * i / 10f
+                        val big = i == 0 || i == 5 || i == 10
+                        drawLine(
+                            color = border.copy(alpha = if (big) 0.95f else 0.55f),
+                            start = Offset(x, size.height * (if (big) 0.10f else 0.20f)),
+                            end = Offset(x, size.height * 0.32f),
+                            strokeWidth = dp1 * (if (big) 1.6f else 1f)
+                        )
+                    }
+                    //linha base HUD
+                    drawLine(
+                        color = border.copy(alpha = 0.45f),
+                        start = Offset(left, trackY),
+                        end = Offset(right, trackY),
+                        strokeWidth = dp1 * 1.5f
+                    )
+                    //segmentos técnicos
+                    var x = left + 18.dp.toPx()
+                    while (x < right - 18.dp.toPx()) {
+                        drawLine(
+                            color = border.copy(alpha = 0.35f),
+                            start = Offset(x, trackY - 4.dp.toPx()),
+                            end = Offset(x + 6.dp.toPx(), trackY - 4.dp.toPx()),
+                            strokeWidth = dp1
+                        )
+                        x += 46.dp.toPx()
+                    }
+                    //extremidades: setas
+                    val arrow = Path().apply {
+                        moveTo(left + 6.dp.toPx(), trackY - 6.dp.toPx())
+                        lineTo(left - 4.dp.toPx(), trackY)
+                        lineTo(left + 6.dp.toPx(), trackY + 6.dp.toPx())
+                    }
+                    drawPath(arrow, color = border.copy(alpha = 0.9f), style = Stroke(width = dp1 * 1.6f, cap = StrokeCap.Round))
+                    val arrowR = Path().apply {
+                        moveTo(right - 6.dp.toPx(), trackY - 6.dp.toPx())
+                        lineTo(right + 4.dp.toPx(), trackY)
+                        lineTo(right - 6.dp.toPx(), trackY + 6.dp.toPx())
+                    }
+                    drawPath(arrowR, color = border.copy(alpha = 0.9f), style = Stroke(width = dp1 * 1.6f, cap = StrokeCap.Round))
+
+                    //preenchimento com brilho
+                    if (thumbX > left) {
+                        drawLine(
+                            color = accent.copy(alpha = 0.30f),
+                            start = Offset(left, trackY),
+                            end = Offset(thumbX, trackY),
+                            strokeWidth = dp1 * 9f,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(accent, accent2),
+                                startX = left,
+                                endX = right
+                            ),
+                            start = Offset(left, trackY),
+                            end = Offset(thumbX, trackY),
+                            strokeWidth = dp1 * 3.5f,
+                            cap = StrokeCap.Round
+                        )
+                    }
+
+                    //seletor hexagonal
+                    val r = 11.dp.toPx()
+                    val hex = Path().apply {
+                        for (i in 0 until 6) {
+                            val ang = Math.toRadians((60.0 * i) - 30.0)
+                            val px = thumbX + (r * Math.cos(ang)).toFloat()
+                            val py = trackY + (r * Math.sin(ang)).toFloat()
+                            if (i == 0) moveTo(px, py) else lineTo(px, py)
+                        }
+                        close()
+                    }
+                    drawCircle(accent.copy(alpha = 0.28f), radius = r * 1.9f, center = Offset(thumbX, trackY))
+                    drawPath(hex, color = Color.White)
+                    drawPath(hex, color = accent2, style = Stroke(width = dp1 * 3f))
+                    drawCircle(Color(0xFF0A0F14), radius = r * 0.42f, center = Offset(thumbX, trackY))
+                }
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val small = MaterialTheme.typography.labelSmall
+            Text(labelText(valueRange.start), style = small, color = textColor.copy(alpha = 0.75f))
+            Text(
+                labelText((valueRange.start + valueRange.endInclusive) / 2f),
+                style = small, color = textColor.copy(alpha = 0.75f), textAlign = TextAlign.Center
+            )
+            Text(labelText(valueRange.endInclusive), style = small, color = textColor.copy(alpha = 0.75f))
+        }
     }
 }
 

@@ -19,6 +19,44 @@
 package com.shoyoomc.aflecklauncher.ui.screens.game.elements
 
 import android.widget.Toast
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfIconCircle
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.afClick
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
+import kotlinx.coroutines.delay
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -102,6 +140,11 @@ private val controlTabs = listOf(
     IconTab(R.drawable.ic_mobile_rotate_filled)
 )
 
+private enum class DockPanel(val title: String) {
+    Controls("CONTROLES"), Gestures("GESTOS"), Mouse("MOUSE"), Gamepad("CONTROLE / GAMEPAD"),
+    Gyro("GIROSCÓPIO"), Resolution("RESOLUÇÃO E TELA"), Game("MENU DO JOGO")
+}
+
 @Composable
 fun GameMenuSubscreen(
     state: MenuState,
@@ -120,89 +163,323 @@ fun GameMenuSubscreen(
     onEditLayout: () -> Unit,
     onShowToast: (AndroidStringText, Int) -> Unit
 ) {
-    DualMenuSubscreen(
-        state = state,
-        closeScreen = closeScreen,
-        leftMenuContent = {
-            val pagerState = rememberPagerState(pageCount = { controlTabs.size })
+    val visible = state == MenuState.SHOW
+    var panel by remember { mutableStateOf<DockPanel?>(null) }
+    LaunchedEffect(visible) { if (!visible) panel = null }
 
-            LaunchedEffect(controlMenuTabIndex) {
-                pagerState.animateScrollToPage(controlMenuTabIndex)
-            }
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val panelHeight = (maxHeight - 210.dp).coerceAtLeast(170.dp)
 
-            Column {
-                //顶贴标签栏
-                SecondaryScrollableTabRow(
-                    selectedTabIndex = controlMenuTabIndex,
-                    edgePadding = 0.dp,
-                    minTabWidth = 58.dp,
-                    containerColor = cardTitleColor(),
-                ) {
-                    controlTabs.forEachIndexed { index, iconTab ->
-                        Tab(
-                            selected = index == controlMenuTabIndex,
-                            onClick = {
-                                onControlMenuTabChange(index)
-                            },
-                            icon = {
-                                Icon(
-                                    modifier = Modifier.size(iconTab.iconSize),
-                                    painter = painterResource(iconTab.iconRes),
-                                    contentDescription = null
-                                )
-                            }
-                        )
-                    }
-                }
-
-                HorizontalPager(
-                    state = pagerState,
-                    userScrollEnabled = false,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f, fill = false)
-                ) { page ->
-                    when (page) {
-                        0 -> {
-                            ControlOverview(
-                                modifier = Modifier.fillMaxSize(),
-                                closeScreen = closeScreen,
-                                onInputMethod = onInputMethod,
-                                onSendKeycode = onSendKeycode,
-                                onReplacementControl = onReplacementControl,
-                                onEditLayout = onEditLayout
-                            )
-                        }
-                        1 -> ControlMouse(modifier = Modifier.fillMaxSize())
-                        2 -> ControlGamepad(
-                            modifier = Modifier.fillMaxSize(),
-                            gamepadViewModel = gamepadViewModel
-                        )
-                        3 -> ControlGesture(modifier = Modifier.fillMaxSize())
-                        4 -> ControlGyroscope(modifier = Modifier.fillMaxSize())
-                    }
-                }
-            }
-        },
-        rightMenuTitle = {
-            Text(
-                modifier = Modifier.padding(all = 8.dp),
-                text = stringResource(R.string.game_menu_title),
-                style = MaterialTheme.typography.titleMedium
-            )
-        },
-        rightMenuContent = {
-            GameActionContent(
-                modifier = Modifier.weight(1f),
-                onForceClose = onForceClose,
-                onSwitchLog = onSwitchLog,
-                enableTerracotta = enableTerracotta,
-                onOpenTerracottaMenu = onOpenTerracottaMenu,
-                onRefreshWindowSize = onRefreshWindowSize,
-                onShowToast = onShowToast
+        AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = closeScreen
+                    )
             )
         }
+
+        AnimatedVisibility(
+            modifier = Modifier.align(Alignment.TopCenter),
+            visible = visible,
+            enter = fadeIn() + slideInVertically { -it },
+            exit = fadeOut() + slideOutVertically { -it }
+        ) {
+            Column(
+                modifier = Modifier.padding(top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AfGameDock(
+                    active = panel,
+                    onOpen = { target -> panel = if (panel == target) null else target },
+                    onKeyboard = { onInputMethod() },
+                    onLog = { onSwitchLog(); closeScreen() },
+                    onForceClose = onForceClose
+                )
+
+                panel?.let { current ->
+                    val shape = AfCutShape(18.dp)
+                    Column(
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .width(460.dp)
+                            .height(panelHeight)
+                            .afHud(shape)
+                            .clip(shape)
+                            .background(AfNavy.copy(alpha = 0.94f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                modifier = Modifier.weight(1f),
+                                text = "HUD // " + current.title,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = AfAccent,
+                                letterSpacing = 2.sp
+                            )
+                            Text(
+                                modifier = Modifier
+                                    .afClick { panel = null }
+                                    .padding(horizontal = 8.dp),
+                                text = "✕",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            when (current) {
+                                DockPanel.Controls -> ControlOverview(
+                                    modifier = Modifier.fillMaxSize(),
+                                    closeScreen = closeScreen,
+                                    onInputMethod = onInputMethod,
+                                    onSendKeycode = onSendKeycode,
+                                    onReplacementControl = onReplacementControl,
+                                    onEditLayout = onEditLayout
+                                )
+                                DockPanel.Gestures -> ControlGesture(modifier = Modifier.fillMaxSize())
+                                DockPanel.Mouse -> ControlMouse(modifier = Modifier.fillMaxSize())
+                                DockPanel.Gamepad -> ControlGamepad(
+                                    modifier = Modifier.fillMaxSize(),
+                                    gamepadViewModel = gamepadViewModel
+                                )
+                                DockPanel.Gyro -> ControlGyroscope(modifier = Modifier.fillMaxSize())
+                                DockPanel.Resolution -> Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(rememberScrollState())
+                                        .padding(8.dp)
+                                ) {
+                                    CustomResolutionContent(onValueCommitted = onRefreshWindowSize)
+                                }
+                                DockPanel.Game -> GameActionContent(
+                                    modifier = Modifier.fillMaxSize(),
+                                    onForceClose = onForceClose,
+                                    onSwitchLog = onSwitchLog,
+                                    enableTerracotta = enableTerracotta,
+                                    onOpenTerracottaMenu = onOpenTerracottaMenu,
+                                    onRefreshWindowSize = onRefreshWindowSize,
+                                    onShowToast = onShowToast
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private class DockEntry(val icon: Int, val label: String, val onClick: () -> Unit, val active: Boolean)
+
+@Composable
+private fun AfGameDock(
+    active: DockPanel?,
+    onOpen: (DockPanel) -> Unit,
+    onKeyboard: () -> Unit,
+    onLog: () -> Unit,
+    onForceClose: () -> Unit
+) {
+    val shape = AfCutShape(20.dp)
+    val left = listOf(
+        DockEntry(R.drawable.ic_dashboard_filled, "Controles", { onOpen(DockPanel.Controls) }, active == DockPanel.Controls),
+        DockEntry(R.drawable.ic_touch_app_filled, "Gestos", { onOpen(DockPanel.Gestures) }, active == DockPanel.Gestures),
+        DockEntry(R.drawable.ic_af_keyboard, "Teclado", onKeyboard, false),
+        DockEntry(R.drawable.ic_mouse_filled, "Mouse", { onOpen(DockPanel.Mouse) }, active == DockPanel.Mouse),
+        DockEntry(R.drawable.ic_mobile_rotate_filled, "Giroscópio", { onOpen(DockPanel.Gyro) }, active == DockPanel.Gyro)
     )
+    val right = listOf(
+        DockEntry(R.drawable.ic_video_settings, "Resolução", { onOpen(DockPanel.Resolution) }, active == DockPanel.Resolution),
+        DockEntry(R.drawable.ic_menu, "Menu flutuante", { onOpen(DockPanel.Game) }, active == DockPanel.Game),
+        DockEntry(R.drawable.ic_rocket_launch_filled, "FPS e Memória", { onOpen(DockPanel.Game) }, false),
+        DockEntry(R.drawable.ic_terminal_outlined, "Log", onLog, false)
+    )
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(0.84f)
+                .widthIn(max = 760.dp)
+                .afHud(shape)
+                .clip(shape)
+                .background(AfNavy.copy(alpha = 0.92f))
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            AfDockGrid(modifier = Modifier.weight(1f), entries = left)
+            AfDockCenter(
+                modifier = Modifier.width(210.dp),
+                onGamepad = { onOpen(DockPanel.Gamepad) },
+                onSettings = { onOpen(DockPanel.Game) }
+            )
+            AfDockGrid(modifier = Modifier.weight(1f), entries = right)
+        }
+        //Botão de forçar saída, colado embaixo do dock
+        Row(
+            modifier = Modifier
+                .offset(y = (-6).dp)
+                .clip(RoundedCornerShape(50))
+                .background(Brush.horizontalGradient(listOf(Color(0xFFB3123F), Color(0xFFE6366B))))
+                .afClick(onForceClose)
+                .padding(horizontal = 26.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("✕", color = Color.White, fontWeight = FontWeight.Bold)
+            Text(
+                "FORÇAR SAÍDA",
+                color = Color.White,
+                fontStyle = FontStyle.Italic,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                letterSpacing = 1.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun AfDockGrid(modifier: Modifier, entries: List<DockEntry>) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        entries.chunked(3).forEach { row ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                row.forEach { entry ->
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .afClick(entry.onClick),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AfIconCircle(icon = entry.icon, size = 44.dp, filled = entry.active)
+                        Text(
+                            text = entry.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+                repeat(3 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun rememberClockText(): String {
+    val fmt = remember { java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()) }
+    var text by remember { mutableStateOf(fmt.format(java.util.Date())) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            text = fmt.format(java.util.Date())
+            delay(15_000)
+        }
+    }
+    return text
+}
+
+@Composable
+private fun rememberBatteryPercent(): Int {
+    val ctx = LocalContext.current
+    var percent by remember { mutableIntStateOf(100) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            val i = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            if (i != null) {
+                val level = i.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                val scale = i.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+                if (level >= 0 && scale > 0) percent = level * 100 / scale
+            }
+            delay(30_000)
+        }
+    }
+    return percent
+}
+
+@Composable
+private fun AfDockCenter(modifier: Modifier, onGamepad: () -> Unit, onSettings: () -> Unit) {
+    val shape = AfCutShape(16.dp)
+    val clock = rememberClockText()
+    val battery = rememberBatteryPercent()
+    Column(
+        modifier = modifier
+            .afGlow(shape, AfAccent, 1.2f)
+            .clip(shape)
+            .background(Color.Black.copy(alpha = 0.5f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(clock, style = MaterialTheme.typography.titleSmall, color = Color.White)
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .size(width = 24.dp, height = 12.dp)
+                    .border(1.dp, Color.White, RoundedCornerShape(3.dp))
+                    .padding(2.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(battery / 100f)
+                        .background(AfAccent)
+                )
+            }
+            Text(
+                modifier = Modifier.padding(start = 4.dp),
+                text = "$battery%",
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.White
+            )
+        }
+        Text(
+            modifier = Modifier.padding(vertical = 4.dp),
+            text = "AfleckLauncher",
+            fontStyle = FontStyle.Italic,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+            color = AfAccent,
+            maxLines = 1
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                modifier = Modifier.size(20.dp).afClick(onGamepad),
+                painter = painterResource(R.drawable.ic_sports_esports_filled),
+                contentDescription = null,
+                tint = Color.White
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "AFLECK-MODE",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                letterSpacing = 2.sp
+            )
+            Icon(
+                modifier = Modifier.size(20.dp).afClick(onSettings),
+                painter = painterResource(R.drawable.ic_settings_filled),
+                contentDescription = null,
+                tint = AfAccent
+            )
+        }
+    }
 }
 
 @Composable

@@ -18,6 +18,13 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.elements
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfOutlineButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfModelStage
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfDim
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.sp
 import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
 import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
 import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
@@ -26,6 +33,16 @@ import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
 import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.afClick
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -1506,6 +1523,14 @@ fun ChangeSkinDialog(
         ChangeSkin.ResetSkin -> ArmModel.Classic
     }
 
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
+    var playing by remember { mutableStateOf(true) }
+    var savedVersion by remember { mutableIntStateOf(0) }
+    val savedSkins = remember(savedVersion) { AfSavedSkins.list(context) }
+    val hasChange = skinState != ChangeSkin.None || capeState != ChangeCape.None
+    val accountSkinFile = remember(account) { account.getSkinFile() }
+
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -1517,42 +1542,63 @@ fun ChangeSkinDialog(
                 .padding(all = 16.dp)
                 .heightIn(max = rememberDialogMaxHeight())
                 .fillMaxHeight()
-                .fillMaxWidth(0.6f),
+                .fillMaxWidth(0.8f),
             contentAlignment = Alignment.Center
         ) {
             Surface(
                 modifier = Modifier
                     .padding(all = 6.dp)
-                    .heightIn(max = (maxHeight - 12.dp).coerceAtMost(rememberDialogMaxHeight())),
-                shape = MaterialTheme.shapes.extraLarge,
-                color = cardColor(false),
-                contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                    .heightIn(max = (maxHeight - 12.dp).coerceAtMost(rememberDialogMaxHeight()))
+                    .afHud(AfCutShape(26.dp)),
+                shape = AfCutShape(26.dp),
+                color = androidx.compose.ui.graphics.Color.Transparent,
+                contentColor = AfText,
+                shadowElevation = 0.dp
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(16.dp),
+                    modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Row(
                         modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        Box(
+                        //Pré-visualização
+                        AfModelStage(
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .weight(1f)
-                                .clip(MaterialTheme.shapes.large)
-                                .background(itemColor(false)),
-                            contentAlignment = Alignment.Center
+                                .clip(AfCutShape(14.dp))
+                                .afGlow(AfCutShape(14.dp), AfBorder, 0.6f)
                         ) {
+                            Text(
+                                "PRÉ-VISUALIZAÇÃO", color = AfAccent, fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold, letterSpacing = 1.sp,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(12.dp)
+                                    .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.7f), androidx.compose.foundation.shape.CircleShape)
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            )
+                            Text(
+                                text = if (playing) "❚❚  Parar" else "▶  Animar",
+                                color = AfText, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(12.dp)
+                                    .afGlow(androidx.compose.foundation.shape.CircleShape, AfBorder, 0.8f)
+                                    .clip(androidx.compose.foundation.shape.CircleShape)
+                                    .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.6f))
+                                    .afClick { playing = !playing }
+                                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                            )
                             PetModelView(
                                 modifier = Modifier.fillMaxSize(),
                                 skin = previewSkin,
                                 cape = previewCape,
                                 arm = previewArm,
-                                animation = PetAnimation.Walking,
+                                animation = if (playing) PetAnimation.Walking else PetAnimation.Idle,
                                 animationSpeed = 0.8f,
                                 gazeEnabled = false
                             )
@@ -1560,131 +1606,156 @@ fun ChangeSkinDialog(
 
                         Column(
                             modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                .weight(1.15f)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            //更换皮肤：选择皮肤图片文件
-                            when (skinState) {
-                                ChangeSkin.None, ChangeSkin.ResetSkin -> {
-                                    InfoLayoutTextItem(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        title = stringResource(R.string.account_change_skin),
-                                        icon = {
+                            //Cabeçalho
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                if (accountSkinFile.exists()) {
+                                    AfSkinHead(accountSkinFile, 40.dp)
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        stringResource(R.string.account_wardrobe), color = AfText,
+                                        fontSize = 20.sp, fontWeight = FontWeight.Bold
+                                    )
+                                    Text(account.username, color = AfDim, fontSize = 12.sp)
+                                }
+                                AfButton(
+                                    text = "MC Skins",
+                                    icon = R.drawable.ic_search,
+                                    modifier = Modifier.height(40.dp),
+                                    onClick = { runCatching { uriHandler.openUri("https://www.minecraftskins.com") } }
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .verticalScroll(rememberScrollState()),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                //Skins salvas
+                                AfSection(title = "SKINS SALVAS") {
+                                    @OptIn(ExperimentalLayoutApi::class)
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        //Nova
+                                        Column(
+                                            modifier = Modifier
+                                                .size(72.dp)
+                                                .afGlow(AfCutShape(12.dp), AfAccent, 1.0f)
+                                                .clip(AfCutShape(12.dp))
+                                                .background(AfAccent.copy(alpha = 0.10f))
+                                                .then(
+                                                    if (!isImportingSkin) Modifier.afClick { skinPicker.launch(arrayOf("image/png")) }
+                                                    else Modifier
+                                                ),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
                                             if (isImportingSkin) {
-                                                CircularProgressIndicator(
-                                                    modifier = Modifier.size(22.dp),
-                                                    strokeWidth = 2.dp
-                                                )
+                                                CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
                                             } else {
                                                 Icon(
-                                                    modifier = Modifier.size(22.dp),
-                                                    painter = painterResource(R.drawable.ic_upload),
-                                                    contentDescription = null
+                                                    modifier = Modifier.size(26.dp),
+                                                    painter = painterResource(R.drawable.ic_add),
+                                                    contentDescription = null,
+                                                    tint = AfText
                                                 )
                                             }
-                                        },
-                                        onClick = {
-                                            skinPicker.launch(arrayOf("image/png"))
-                                        },
-                                        enabled = !isImportingSkin
-                                    )
-                                }
+                                            Text("Nova", color = AfText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        }
 
-                                is ChangeSkin.ChangeSkinData -> {
-                                    val model = skinState.data.getModelTypeNullable()
+                                        savedSkins.forEach { file ->
+                                            val slim = AfSavedSkins.isSlim(file)
+                                            val selected = skinState is ChangeSkin.ChangeSkinData &&
+                                                    skinState.cacheFile.name == "af_prev_" + file.name
+                                            AfSkinTile(
+                                                file = file,
+                                                slim = slim,
+                                                selected = selected,
+                                                onClick = {
+                                                    val tmp = File(context.cacheDir, "af_prev_" + file.name)
+                                                    runCatching { file.copyTo(tmp, overwrite = true) }.onSuccess {
+                                                        onSkinStateChange(
+                                                            ChangeSkin.ChangeSkinData(
+                                                                tmp,
+                                                                SkinModel.Model(if (slim) SkinModelType.ALEX else SkinModelType.STEVE)
+                                                            )
+                                                        )
+                                                    }
+                                                },
+                                                onDelete = {
+                                                    file.delete()
+                                                    savedVersion++
+                                                }
+                                            )
+                                        }
+                                    }
 
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
+                                    //Estilo do braço da skin escolhida
+                                    if (skinState is ChangeSkin.ChangeSkinData) {
+                                        val model = skinState.data.getModelTypeNullable()
                                         Text(
                                             text = stringResource(R.string.account_change_skin_arm_style),
                                             style = MaterialTheme.typography.bodyMedium
                                         )
-                                        //选择样式
                                         Column(
                                             modifier = Modifier.fillMaxWidth(),
-                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                            verticalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
-                                            //粗臂
                                             RadioCard(
                                                 selected = model == SkinModelType.STEVE,
                                                 enabled = skinState.data !is SkinModel.Rejected,
                                                 text = stringResource(R.string.account_change_skin_arm_wide),
                                                 onClick = {
-                                                    onSkinStateChange(
-                                                        skinState.copy(
-                                                            data = SkinModel.Model(SkinModelType.STEVE)
-                                                        )
-                                                    )
+                                                    onSkinStateChange(skinState.copy(data = SkinModel.Model(SkinModelType.STEVE)))
                                                 }
                                             )
-                                            //细臂
                                             RadioCard(
                                                 selected = model == SkinModelType.ALEX,
                                                 enabled = skinState.data !is SkinModel.Rejected,
                                                 text = stringResource(R.string.account_change_skin_arm_slim),
                                                 onClick = {
-                                                    onSkinStateChange(
-                                                        skinState.copy(
-                                                            data = SkinModel.Model(SkinModelType.ALEX)
-                                                        )
-                                                    )
+                                                    onSkinStateChange(skinState.copy(data = SkinModel.Model(SkinModelType.ALEX)))
                                                 }
                                             )
                                         }
                                     }
                                 }
-                            }
 
-                            //仅微软账号支持更改披风
-                            if (account.isMicrosoftAccount()) {
-                                InfoLayoutTextItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    title = if (isFetchingCapes) {
-                                        stringResource(R.string.account_change_cape_fetch_all)
-                                    } else {
-                                        stringResource(R.string.account_change_cape)
-                                    },
-                                    icon = {
-                                        if (isFetchingCapes) {
-                                            CircularProgressIndicator(
-                                                modifier = Modifier.size(22.dp),
-                                                strokeWidth = 2.dp
-                                            )
-                                        } else {
-                                            Icon(
-                                                modifier = Modifier.size(22.dp),
-                                                painter = painterResource(R.drawable.ic_styler),
-                                                contentDescription = null
-                                            )
-                                        }
-                                    },
-                                    onClick = {
-                                        showCapeSelector = true
-                                    },
-                                    enabled = !isFetchingCapes
-                                )
-                            }
-
-                            //离线账号重置皮肤
-                            if (account.isLocalAccount() && account.hasSkinFile && skinState != ChangeSkin.ResetSkin) {
-                                InfoLayoutTextItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    title = stringResource(R.string.generic_reset),
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(22.dp),
-                                            painter = painterResource(R.drawable.ic_restart_alt),
-                                            contentDescription = null
+                                //Mais opções
+                                AfSection(title = "MAIS OPÇÕES") {
+                                    //Somente contas Microsoft podem trocar a capa (lista de capas oficiais do ZL2)
+                                    if (account.isMicrosoftAccount()) {
+                                        AfOptionRow(
+                                            icon = R.drawable.ic_styler,
+                                            title = if (isFetchingCapes) {
+                                                stringResource(R.string.account_change_cape_fetch_all)
+                                            } else {
+                                                stringResource(R.string.account_change_cape)
+                                            },
+                                            loading = isFetchingCapes,
+                                            enabled = !isFetchingCapes,
+                                            onClick = { showCapeSelector = true }
                                         )
-                                    },
-                                    onClick = {
-                                        onSkinStateChange(ChangeSkin.ResetSkin)
                                     }
-                                )
+                                    //Contas offline: resetar skin
+                                    if (account.isLocalAccount() && account.hasSkinFile && skinState != ChangeSkin.ResetSkin) {
+                                        AfOptionRow(
+                                            icon = R.drawable.ic_restart_alt,
+                                            title = "Resetar",
+                                            onClick = { onSkinStateChange(ChangeSkin.ResetSkin) }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -1693,37 +1764,38 @@ fun ChangeSkinDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FilledTonalButton(
+                        AfOutlineButton(
+                            text = stringResource(R.string.generic_cancel),
                             modifier = Modifier.weight(1f),
                             onClick = onDismissRequest
-                        ) {
-                            Text(text = stringResource(R.string.generic_cancel))
-                        }
+                        )
+                        Box(Modifier.weight(1f).alpha(if (hasChange) 1f else 0.45f)) {
+                            AfButton(
+                                text = "Aplicar",
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    if (!hasChange) return@AfButton
 
-                        Button(
-                            modifier = Modifier.weight(1f),
-                            enabled = skinState != ChangeSkin.None || capeState != ChangeCape.None,
-                            onClick = {
-                                when (skinState) {
-                                    is ChangeSkin.ChangeSkinData -> {
-                                        onApplySkin(skinState.cacheFile, skinState.data.getModelType())
+                                    when (skinState) {
+                                        is ChangeSkin.ChangeSkinData -> {
+                                            AfSavedSkins.save(
+                                                context,
+                                                skinState.cacheFile,
+                                                skinState.data.getModelType() == SkinModelType.ALEX
+                                            )
+                                            onApplySkin(skinState.cacheFile, skinState.data.getModelType())
+                                        }
+                                        is ChangeSkin.ResetSkin -> onResetSkin()
+                                        ChangeSkin.None -> {}
                                     }
 
-                                    is ChangeSkin.ResetSkin -> {
-                                        onResetSkin()
+                                    if (capeState is ChangeCape.ChangeCapeData) {
+                                        onApplyCape(capeState.cape)
                                     }
 
-                                    ChangeSkin.None -> {}
+                                    onDismissRequest()
                                 }
-
-                                if (capeState is ChangeCape.ChangeCapeData) {
-                                    onApplyCape(capeState.cape)
-                                }
-
-                                onDismissRequest()
-                            }
-                        ) {
-                            Text(text = stringResource(R.string.generic_confirm))
+                            )
                         }
                     }
                 }
@@ -1979,4 +2051,139 @@ private fun getSkinAvatar(
         avatarPaint
     )
     return avatar
+}
+
+
+/** Skins salvas no aparelho (Guarda-roupa). O nome do arquivo termina em _slim ou _wide. */
+private object AfSavedSkins {
+    fun dir(ctx: android.content.Context): File = File(ctx.filesDir, "af_saved_skins").also { it.mkdirs() }
+
+    fun list(ctx: android.content.Context): List<File> =
+        dir(ctx).listFiles { f -> f.extension == "png" }?.sortedByDescending { it.lastModified() } ?: emptyList()
+
+    fun isSlim(f: File) = f.nameWithoutExtension.endsWith("_slim")
+
+    fun save(ctx: android.content.Context, src: File, slim: Boolean) {
+        val bytes = runCatching { src.readBytes() }.getOrNull() ?: return
+        if (list(ctx).any { it.length() == bytes.size.toLong() && runCatching { it.readBytes().contentEquals(bytes) }.getOrDefault(false) }) return
+        runCatching {
+            File(dir(ctx), "${System.currentTimeMillis()}_${if (slim) "slim" else "wide"}.png").writeBytes(bytes)
+        }
+    }
+}
+
+/** Cabeça (8x8 + camada externa) de uma skin, sem suavização. */
+@Composable
+private fun AfSkinHead(file: File, size: Dp, modifier: Modifier = Modifier) {
+    val bmp by produceState<ImageBitmap?>(null, file) {
+        value = withContext(Dispatchers.IO) {
+            runCatching { BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap() }.getOrNull()
+        }
+    }
+    val img = bmp
+    androidx.compose.foundation.Canvas(modifier.size(size)) {
+        if (img != null && img.width >= 64 && img.height >= 16) {
+            val dst = IntSize(this.size.width.toInt(), this.size.height.toInt())
+            drawImage(img, srcOffset = IntOffset(8, 8), srcSize = IntSize(8, 8), dstSize = dst, filterQuality = FilterQuality.None)
+            drawImage(img, srcOffset = IntOffset(40, 8), srcSize = IntSize(8, 8), dstSize = dst, filterQuality = FilterQuality.None)
+        }
+    }
+}
+
+@Composable
+private fun AfSkinTile(file: File, slim: Boolean, selected: Boolean, onClick: () -> Unit, onDelete: () -> Unit) {
+    val shape = AfCutShape(12.dp)
+    Box(modifier = Modifier.size(72.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .afGlow(shape, if (selected) AfAccent else AfBorder, if (selected) 1.2f else 0.6f)
+                .clip(shape)
+                .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.35f))
+                .afClick(onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            AfSkinHead(file, 48.dp)
+            Text(
+                text = if (slim) "SLIM" else "WIDE",
+                color = AfText, fontSize = 8.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 2.dp)
+            )
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(22.dp)
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(androidx.compose.ui.graphics.Color(0xFFE57373))
+                .afClick(onDelete),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                modifier = Modifier.size(14.dp),
+                painter = painterResource(R.drawable.ic_close),
+                contentDescription = null,
+                tint = androidx.compose.ui.graphics.Color.White
+            )
+        }
+    }
+}
+
+@Composable
+private fun AfSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+    val shape = AfCutShape(14.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .afGlow(shape, AfBorder, 0.6f)
+            .clip(shape)
+            .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.25f))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            title, color = AfAccent, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold, letterSpacing = 2.sp
+        )
+        content()
+    }
+}
+
+@Composable
+private fun AfOptionRow(
+    icon: Int,
+    title: String,
+    onClick: () -> Unit,
+    loading: Boolean = false,
+    enabled: Boolean = true
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.07f))
+            .then(if (enabled) Modifier.afClick(onClick) else Modifier)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if (loading) {
+            CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+        } else {
+            Icon(
+                modifier = Modifier.size(22.dp),
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = AfAccent
+            )
+        }
+        Text(title, color = AfText, fontSize = 16.sp, modifier = Modifier.weight(1f))
+        Icon(
+            modifier = Modifier.size(20.dp),
+            painter = painterResource(R.drawable.ic_arrow_right_rounded),
+            contentDescription = null,
+            tint = AfDim
+        )
+    }
 }

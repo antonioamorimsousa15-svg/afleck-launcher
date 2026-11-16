@@ -48,7 +48,7 @@ fun AfTopBar(
     ) {
         Pill(onClick = onLogo) {
             Box(
-                Modifier.size(42.dp).afGlow(CircleShape, AfAccent, 1.2f).clip(CircleShape).background(AfAccent.copy(alpha = 0.16f)),
+                Modifier.size(42.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
                 contentAlignment = Alignment.Center
             ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(26.dp)) }
             Spacer(Modifier.width(10.dp))
@@ -59,7 +59,7 @@ fun AfTopBar(
         }
         Pill {
             Box(
-                Modifier.size(38.dp).afGlow(CircleShape, AfAccent, 1.2f).clip(CircleShape).background(AfAccent.copy(alpha = 0.16f)),
+                Modifier.size(38.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
                 contentAlignment = Alignment.Center
             ) { Text("❄", color = AfAccent, fontSize = 20.sp) }
             Spacer(Modifier.width(10.dp))
@@ -85,7 +85,7 @@ fun AfTopBar(
 @Composable
 private fun Pill(onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit) {
     Row(
-        modifier = Modifier.afGlow(AfCutShape(12.dp), AfBorder, 0.8f).clip(AfCutShape(12.dp)).background(AfNavy.copy(alpha = 0.45f))
+        modifier = Modifier.afRect(AfBorder, radius = 14.dp)
             .then(if (onClick != null) Modifier.afClick(onClick) else Modifier)
             .padding(start = 5.dp, end = 16.dp, top = 5.dp, bottom = 5.dp),
         verticalAlignment = Alignment.CenterVertically,

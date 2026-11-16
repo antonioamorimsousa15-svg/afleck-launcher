@@ -65,17 +65,14 @@ private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> 
     val color = if (selected) AfAccent else AfBorder
     Row(
         modifier = Modifier.fillMaxWidth().height(56.dp)
-            .afGlow(AfCutShape(14.dp), color, if (selected) 1.6f else 0.6f)
-            .clip(AfCutShape(14.dp))
-            .background(if (selected) AfAccent.copy(alpha = 0.18f) else AfNavy.copy(alpha = 0.35f))
+            .afRect(color, selected, 14.dp)
             .afClick(onClick)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier.size(42.dp)
-                .afGlow(CircleShape, color, 0.6f)
-                .clip(CircleShape).background(AfNavy.copy(alpha = 0.6f)),
+                .clip(CircleShape).border(1.2.dp, color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(painterResource(icon), null, tint = if (selected) AfAccent else AfText, modifier = Modifier.size(21.dp))

@@ -186,14 +186,19 @@ internal fun AfPanel(
     )
 }
 
+
+/** Retângulo arredondado só com borda (sem fundo, sem sombra). */
+internal fun Modifier.afRect(color: Color, selected: Boolean = false, radius: Dp = 14.dp): Modifier {
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius)
+    return this.clip(shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
+}
+
 /** Botão principal: degradê ciano, texto escuro. */
 @Composable
 internal fun AfButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     Row(
         modifier = modifier.height(50.dp)
-            .afGlow(AfCutShape(12.dp), AfAccent, 1.2f)
-            .clip(AfCutShape(12.dp))
-            .background(AfAccent.copy(alpha = 0.16f))
+            .afRect(AfAccent, selected = true, radius = 14.dp)
             .afClick(onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -211,9 +216,7 @@ internal fun AfButton(text: String, modifier: Modifier = Modifier, icon: Int? = 
 internal fun AfOutlineButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, onClick: () -> Unit) {
     Row(
         modifier = modifier.height(44.dp)
-            .afGlow(AfCutShape(12.dp), AfBorder, 0.8f)
-            .clip(AfCutShape(12.dp))
-            .background(AfNavy.copy(alpha = 0.35f))
+            .afRect(AfBorder, radius = 14.dp)
             .afClick(onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
