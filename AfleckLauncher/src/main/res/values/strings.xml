@@ -1719,7 +1719,7 @@
     <!-- Name of the Gamepad category on the settings screen and the title of its page -->
     <string name="settings_tab_gamepad">Gamepad</string>
     <!-- Name of the Launcher category on the settings screen and the title of its page -->
-    <string name="settings_tab_launcher">Launcher</string>
+    <string name="settings_tab_launcher">Appearance</string>
     <!-- Name of the Java management category on the settings screen and the title of its page -->
     <string name="settings_tab_java_manage">Java</string>
     <!-- Title of the control layout management page in the launcher settings -->

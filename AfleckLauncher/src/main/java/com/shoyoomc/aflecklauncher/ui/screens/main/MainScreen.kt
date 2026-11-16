@@ -176,9 +176,11 @@ fun MainScreen(
         color = backgroundColor,
         contentColor = onBackgroundColor()
     ) {
-        Box(Modifier.fillMaxSize().background(Color.Black)) {
-        AfSlotImage(bgSlot, AfThemeState.current.bg, Modifier.fillMaxSize())
-        Box(Modifier.fillMaxSize().background(Color(0x59000000)))
+        // Se o usuário escolheu um plano de fundo em Ajustes > Launcher, ele aparece (imagem ou vídeo).
+        val useSystemBg = isBackgroundValid && bgSlot.uri == null
+        Box(Modifier.fillMaxSize().then(if (useSystemBg) Modifier else Modifier.background(Color.Black))) {
+        if (!useSystemBg) AfSlotImage(bgSlot, AfThemeState.current.bg, Modifier.fillMaxSize())
+        Box(Modifier.fillMaxSize().background(Color(if (useSystemBg) 0x33000000 else 0x59000000)))
         Column(modifier = Modifier.fillMaxSize()) {
             AfTopBar(
                 sectionTitle = when {

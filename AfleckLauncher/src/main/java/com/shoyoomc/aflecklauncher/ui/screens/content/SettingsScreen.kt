@@ -18,6 +18,8 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfTabBar
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfTabSpec
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -84,14 +86,15 @@ fun SettingsScreen(
         currentKey = backStackViewModel.mainScreen.currentKey
     ) { isVisible ->
 
-        Row(modifier = Modifier.fillMaxSize()) {
-            TabMenu(
-                modifier = Modifier.fillMaxHeight(),
-                isVisible = isVisible,
-                settingsScreenKey = backStackViewModel.settingsScreen.currentKey,
-                navigateTo = { settingKey ->
-                    key.backStack.navigateOnce(settingKey)
-                }
+        androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxSize()) {
+            val current = backStackViewModel.settingsScreen.currentKey
+            AfTabBar(
+                tabs = afSettingTabs.map { (tabKey, icon, text) ->
+                    AfTabSpec(icon, text, current == tabKey) { key.backStack.navigateOnce(tabKey) }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             )
             NavigationUI(
                 key = key,
@@ -103,11 +106,21 @@ fun SettingsScreen(
                 openLicenseScreen = openLicenseScreen,
                 eventViewModel = eventViewModel,
                 submitError = submitError,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
         }
     }
 }
+
+private val afSettingTabs = listOf<Triple<TitledNavKey, Int, Int>>(
+    Triple(NormalNavKey.Settings.Launcher, R.drawable.ic_setting_launcher, R.string.settings_tab_launcher),
+    Triple(NormalNavKey.Settings.Game, R.drawable.ic_rocket_launch_filled, R.string.settings_tab_game),
+    Triple(NormalNavKey.Settings.Renderer, R.drawable.ic_video_settings, R.string.settings_tab_renderer),
+    Triple(NormalNavKey.Settings.Control, R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control),
+    Triple(NormalNavKey.Settings.ControlManager, R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control_manage),
+    Triple(NormalNavKey.Settings.JavaManager, R.drawable.ic_java, R.string.settings_tab_java_manage),
+    Triple(NormalNavKey.Settings.AboutInfo, R.drawable.ic_info_outlined, R.string.settings_tab_info_about),
+)
 
 private val settingItems = listOf(
     CategoryItem(NormalNavKey.Settings.Renderer, { CategoryIcon(R.drawable.ic_video_settings, R.string.settings_tab_renderer) }, R.string.settings_tab_renderer),

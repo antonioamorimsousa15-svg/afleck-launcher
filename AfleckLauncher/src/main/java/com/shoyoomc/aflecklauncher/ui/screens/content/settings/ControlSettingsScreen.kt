@@ -175,6 +175,18 @@ fun ControlSettingsScreen(
                 ) {
                     val mouseSize = AllSettings.mouseSize.state
 
+                    var mouseThemeOpen by remember { mutableStateOf(false) }
+                    SettingsCard(
+                        position = CardPosition.Top,
+                        modifier = Modifier.fillMaxWidth(),
+                        title = "Tema do mouse",
+                        summary = "Setinhas do mouse virtual: padrão, mão, digitar, mira, cima/baixo, esquerda/direita, mover e sem permissão.",
+                        onClick = { mouseThemeOpen = !mouseThemeOpen },
+                        trailingIcon = {
+                            Text(if (mouseThemeOpen) "▲" else "▼")
+                        }
+                    )
+                    if (mouseThemeOpen) {
                     var arrowMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
                     MousePointerCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -294,6 +306,8 @@ fun ControlSettingsScreen(
                         changeOperation = { notAllowedMouseOperation = it },
                         submitError = submitError
                     )
+
+                    }
 
                     IntSliderSettingsCard(
                         modifier = Modifier.fillMaxWidth(),

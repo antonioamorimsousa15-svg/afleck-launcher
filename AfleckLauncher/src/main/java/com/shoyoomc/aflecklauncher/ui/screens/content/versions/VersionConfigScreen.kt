@@ -414,18 +414,6 @@ private fun GameConfigs(
         TextInputSettingsCard(
             modifier = Modifier.fillMaxWidth(),
             position = CardPosition.Middle,
-            value = stateful.customInfo,
-            onValueChange = { stateful.customInfo = it },
-            title = stringResource(R.string.settings_game_version_custom_info_title),
-            summary = stringResource(R.string.settings_game_version_custom_info_summary),
-            label = {
-                Text(text = stringResource(R.string.versions_config_follow_global_if_blank))
-            }
-        )
-
-        TextInputSettingsCard(
-            modifier = Modifier.fillMaxWidth(),
-            position = CardPosition.Middle,
             value = stateful.gameArgs,
             title = stringResource(R.string.versions_config_game_args_title),
             summary = stringResource(R.string.versions_config_game_args_summary),

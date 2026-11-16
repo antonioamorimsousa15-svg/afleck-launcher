@@ -100,18 +100,10 @@ fun GameSettingsScreen(
 
                     SwitchSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
+                        position = CardPosition.Bottom,
                         unit = AllSettings.skipGameIntegrityCheck,
                         title = stringResource(R.string.settings_game_skip_game_integrity_check_title),
                         summary = stringResource(R.string.settings_game_skip_game_integrity_check_summary)
-                    )
-
-                    TextInputSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Bottom,
-                        unit = AllSettings.versionCustomInfo,
-                        title = stringResource(R.string.settings_game_version_custom_info_title),
-                        summary = stringResource(R.string.settings_game_version_custom_info_summary)
                     )
                 }
             }
