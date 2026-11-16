@@ -18,6 +18,20 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfPanel
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfDim
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -136,10 +150,9 @@ fun DownloadScreen(
         currentKey = backScreenViewModel.mainScreen.currentKey,
         useClassEquality = true
     ) { isVisible: Boolean ->
-        Row(modifier = Modifier.fillMaxSize()) {
-            TabMenu(
-                modifier = Modifier.fillMaxHeight(),
-                isVisible = isVisible,
+        androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxSize()) {
+            AfDownloadTabs(
+                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
                 backStack = key.backStack,
                 backScreenViewModel = backScreenViewModel,
             )
@@ -150,7 +163,7 @@ fun DownloadScreen(
                 eventViewModel = eventViewModel,
                 modpackImportViewModel = modpackImportViewModel,
                 submitError = submitError,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
         }
     }
@@ -355,4 +368,31 @@ private fun NavigationUI(
     } else {
         Box(modifier)
     }
+}
+
+/** Barra de abas numeradas do Download (01 Minecraft, 02 Mods, ...). */
+@Composable
+private fun AfDownloadTabs(
+    modifier: Modifier = Modifier,
+    backStack: NavBackStack<TitledNavKey>,
+    backScreenViewModel: ScreenBackStackViewModel,
+) {
+    val tabs = listOf<Triple<TitledNavKey, Int, Int>>(
+        Triple(backScreenViewModel.downloadGameScreen, R.drawable.ic_sports_esports_outlined, R.string.download_category_game),
+        Triple(backScreenViewModel.downloadModScreen, R.drawable.ic_extension_outlined, R.string.download_category_mod),
+        Triple(backScreenViewModel.downloadShadersScreen, R.drawable.ic_lightbulb, R.string.download_category_shaders),
+        Triple(backScreenViewModel.downloadModPackScreen, R.drawable.ic_package_2_outlined, R.string.download_category_modpack),
+        Triple(backScreenViewModel.downloadResourcePackScreen, R.drawable.ic_format_paint_outlined, R.string.download_category_resource_pack),
+        Triple(backScreenViewModel.downloadSavesScreen, R.drawable.ic_public, R.string.download_category_saves),
+        Triple(backScreenViewModel.downloadFavoritesScreen, R.drawable.ic_favorite_outlined, R.string.download_category_favorites),
+        Triple(NormalNavKey.SearchId, R.drawable.ic_card, R.string.download_category_by_id),
+    )
+    com.shoyoomc.aflecklauncher.ui.screens.main.AfTabBar(
+        tabs = tabs.map { (tabKey, iconRes, textRes) ->
+            com.shoyoomc.aflecklauncher.ui.screens.main.AfTabSpec(
+                iconRes, textRes, backScreenViewModel.downloadScreen.currentKey == tabKey
+            ) { backStack.navigateOnce(tabKey) }
+        },
+        modifier = modifier
+    )
 }
