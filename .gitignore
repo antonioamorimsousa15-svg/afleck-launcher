@@ -32,3 +32,4 @@ LWJGL/*/build/
 
 .vscode/
 
+*.apk
