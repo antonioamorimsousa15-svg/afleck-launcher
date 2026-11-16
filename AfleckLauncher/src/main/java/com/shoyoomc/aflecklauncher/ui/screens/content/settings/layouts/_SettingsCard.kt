@@ -18,7 +18,17 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.settings.layouts
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.draw.alpha
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
+import com.shoyoomc.aflecklauncher.ui.theme.onCardColor
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -201,6 +211,34 @@ fun rememberSettingsCardShape(
     }
 }
 
+/** Dentro de um [SettingsCardColumn] as linhas viram um único cartão de vidro com divisórias. */
+internal val LocalSettingsGroup = compositionLocalOf { false }
+
+@Composable
+private fun SettingsGroupRow(
+    modifier: Modifier,
+    position: CardPosition,
+    onClick: (() -> Unit)?,
+    enabled: Boolean,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val first = position == CardPosition.Top || position == CardPosition.TopStart ||
+            position == CardPosition.TopEnd || position == CardPosition.Single
+    Column(
+        modifier = modifier
+            .alpha(if (enabled) 1f else 0.5f)
+            .then(if (onClick != null) Modifier.clickable(enabled = enabled, onClick = onClick) else Modifier)
+    ) {
+        if (!first) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = AfBorder.copy(alpha = 0.35f)
+            )
+        }
+        content()
+    }
+}
+
 @Composable
 fun SettingsCard(
     modifier: Modifier = Modifier,
@@ -209,6 +247,10 @@ fun SettingsCard(
     innerShape: Dp = 4.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    if (LocalSettingsGroup.current) {
+        SettingsGroupRow(modifier, position, null, true, content)
+        return
+    }
     val shape = rememberSettingsCardShape(position, outerShape, innerShape)
 
     BackgroundCard(
@@ -228,6 +270,10 @@ fun SettingsCard(
     enabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    if (LocalSettingsGroup.current) {
+        SettingsGroupRow(modifier, position, onClick, enabled, content)
+        return
+    }
     val shape = rememberSettingsCardShape(position, outerShape, innerShape)
 
     BackgroundCard(
@@ -254,6 +300,31 @@ fun SettingsCard(
     trailingIcon: (@Composable RowScope.() -> Unit)? = null,
     enabled: Boolean = true
 ) {
+    if (LocalSettingsGroup.current) {
+        SettingsGroupRow(modifier, position, onClick, enabled) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(innerPadding),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TitleAndSummary(
+                    modifier = Modifier.weight(1f),
+                    title = title,
+                    summary = summary,
+                    titleStyle = titleStyle,
+                    summaryStyle = summaryStyle
+                )
+                trailingIcon?.let { trailing ->
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        content = trailing
+                    )
+                }
+            }
+        }
+        return
+    }
     val shape = rememberSettingsCardShape(position, outerShape, innerShape)
 
     BackgroundCard(
@@ -290,9 +361,14 @@ fun SettingsCardColumn(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalSettingsGroup provides true,
+        LocalContentColor provides onCardColor()
+    ) {
+        Column(
+            modifier = modifier.afHud(AfCutShape(18.dp)),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
+            content = content
+        )
+    }
 }

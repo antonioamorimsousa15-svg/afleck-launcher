@@ -98,7 +98,7 @@ sealed interface NormalNavKey : TitledNavKey {
         }
         /** 控制管理屏幕 */
         @Serializable data object ControlManager : Settings {
-            @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_control_manage)
+            @Contextual override val title: AndroidStringText = androidText(R.string.af_tab_hud)
         }
         /** 关于屏幕 */
         @Serializable data object AboutInfo : Settings {

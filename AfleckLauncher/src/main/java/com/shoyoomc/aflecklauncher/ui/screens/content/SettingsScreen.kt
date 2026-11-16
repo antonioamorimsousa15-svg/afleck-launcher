@@ -117,7 +117,7 @@ private val afSettingTabs = listOf<Triple<TitledNavKey, Int, Int>>(
     Triple(NormalNavKey.Settings.Game, R.drawable.ic_rocket_launch_filled, R.string.settings_tab_game),
     Triple(NormalNavKey.Settings.Renderer, R.drawable.ic_video_settings, R.string.settings_tab_renderer),
     Triple(NormalNavKey.Settings.Control, R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control),
-    Triple(NormalNavKey.Settings.ControlManager, R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control_manage),
+    Triple(NormalNavKey.Settings.ControlManager, R.drawable.ic_videogame_asset_outlined, R.string.af_tab_hud),
     Triple(NormalNavKey.Settings.JavaManager, R.drawable.ic_java, R.string.settings_tab_java_manage),
     Triple(NormalNavKey.Settings.AboutInfo, R.drawable.ic_info_outlined, R.string.settings_tab_info_about),
 )
@@ -129,7 +129,7 @@ private val settingItems = listOf(
     CategoryItem(NormalNavKey.Settings.Gamepad, { CategoryIcon(R.drawable.ic_sports_esports_outlined, R.string.settings_tab_gamepad) }, R.string.settings_tab_gamepad),
     CategoryItem(NormalNavKey.Settings.Launcher, { CategoryIcon(R.drawable.ic_setting_launcher, R.string.settings_tab_launcher) }, R.string.settings_tab_launcher),
     CategoryItem(NormalNavKey.Settings.JavaManager, { CategoryIcon(R.drawable.ic_java, R.string.settings_tab_java_manage) }, R.string.settings_tab_java_manage, division = true),
-    CategoryItem(NormalNavKey.Settings.ControlManager, { CategoryIcon(R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control_manage) }, R.string.settings_tab_control_manage),
+    CategoryItem(NormalNavKey.Settings.ControlManager, { CategoryIcon(R.drawable.ic_videogame_asset_outlined, R.string.af_tab_hud) }, R.string.af_tab_hud),
     CategoryItem(NormalNavKey.Settings.AboutInfo, { CategoryIcon(R.drawable.ic_info_outlined, R.string.settings_tab_info_about) }, R.string.settings_tab_info_about, division = true)
 )
 

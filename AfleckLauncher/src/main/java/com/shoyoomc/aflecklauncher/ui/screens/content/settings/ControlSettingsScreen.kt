@@ -22,6 +22,28 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.graphics.Color
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfOutlineButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.afClick
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +60,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -175,138 +198,23 @@ fun ControlSettingsScreen(
                 ) {
                     val mouseSize = AllSettings.mouseSize.state
 
-                    var mouseThemeOpen by remember { mutableStateOf(false) }
+                    var mouseStyleOpen by remember { mutableStateOf(false) }
                     SettingsCard(
                         position = CardPosition.Top,
                         modifier = Modifier.fillMaxWidth(),
-                        title = "Tema do mouse",
-                        summary = "Setinhas do mouse virtual: padrão, mão, digitar, mira, cima/baixo, esquerda/direita, mover e sem permissão.",
-                        onClick = { mouseThemeOpen = !mouseThemeOpen },
+                        title = "Estilo do mouse virtual",
+                        summary = "Troque cada tipo de setinha do mouse virtual com um guia passo a passo.",
+                        onClick = { mouseStyleOpen = true },
                         trailingIcon = {
-                            Text(if (mouseThemeOpen) "▲" else "▼")
+                            Text("›", style = MaterialTheme.typography.titleLarge)
                         }
                     )
-                    if (mouseThemeOpen) {
-                    var arrowMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Top,
-                        title = stringResource(R.string.settings_control_mouse_pointer_arrow_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_arrow_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = arrowPointerFile,
-                        cursorShape = CursorShape.Arrow,
-                        hotspot = AllSettings.arrowMouseHotspot,
-                        mouseOperation = arrowMouseOperation,
-                        changeOperation = { arrowMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var linkMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_link_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_link_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = linkPointerFile,
-                        cursorShape = CursorShape.Hand,
-                        hotspot = AllSettings.linkMouseHotspot,
-                        mouseOperation = linkMouseOperation,
-                        changeOperation = { linkMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var ibeamMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_ibeam_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_ibeam_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = iBeamPointerFile,
-                        cursorShape = CursorShape.IBeam,
-                        hotspot = AllSettings.iBeamMouseHotspot,
-                        mouseOperation = ibeamMouseOperation,
-                        changeOperation = { ibeamMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var crosshairMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_crosshair_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_common_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = crossHairPointerFile,
-                        cursorShape = CursorShape.CrossHair,
-                        hotspot = AllSettings.crossHairMouseHotspot,
-                        mouseOperation = crosshairMouseOperation,
-                        changeOperation = { crosshairMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var resizeNSMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_resize_ns_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_resize_ns_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = resizeNSPointerFile,
-                        cursorShape = CursorShape.ResizeNS,
-                        hotspot = AllSettings.resizeNSMouseHotspot,
-                        mouseOperation = resizeNSMouseOperation,
-                        changeOperation = { resizeNSMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var resizeEWMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_resize_ew_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_resize_ew_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = resizeEWPointerFile,
-                        cursorShape = CursorShape.ResizeEW,
-                        hotspot = AllSettings.resizeEWMouseHotspot,
-                        mouseOperation = resizeEWMouseOperation,
-                        changeOperation = { resizeEWMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var resizeAllMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_resize_all_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_common_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = resizeAllPointerFile,
-                        cursorShape = CursorShape.ResizeAll,
-                        hotspot = AllSettings.resizeAllMouseHotspot,
-                        mouseOperation = resizeAllMouseOperation,
-                        changeOperation = { resizeAllMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var notAllowedMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_not_allowed_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_not_allowed_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = notAllowedPointerFile,
-                        cursorShape = CursorShape.NotAllowed,
-                        hotspot = AllSettings.notAllowedMouseHotspot,
-                        mouseOperation = notAllowedMouseOperation,
-                        changeOperation = { notAllowedMouseOperation = it },
-                        submitError = submitError
-                    )
-
+                    if (mouseStyleOpen) {
+                        AfMouseStyleDialog(
+                            mouseSize = mouseSize,
+                            submitError = submitError,
+                            onClose = { mouseStyleOpen = false }
+                        )
                     }
 
                     IntSliderSettingsCard(
@@ -821,6 +729,269 @@ private fun MousePointerOperation(
                     changeOperation(MousePointerOperation.None)
                 }
             )
+        }
+    }
+}
+
+
+/** Um tipo de setinha do mouse virtual. */
+private class AfMouseType(
+    val title: String,
+    val summary: String,
+    val file: File,
+    val shape: CursorShape,
+    val hotspot: ParcelableSettingUnit<CursorHotspot>
+)
+
+@Composable
+private fun AfMouseStyleDialog(
+    mouseSize: Int,
+    submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
+    onClose: () -> Unit
+) {
+    val types = listOf(
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_arrow_title), stringResource(R.string.settings_control_mouse_pointer_arrow_summary), arrowPointerFile, CursorShape.Arrow, AllSettings.arrowMouseHotspot),
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_link_title), stringResource(R.string.settings_control_mouse_pointer_link_summary), linkPointerFile, CursorShape.Hand, AllSettings.linkMouseHotspot),
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_ibeam_title), stringResource(R.string.settings_control_mouse_pointer_ibeam_summary), iBeamPointerFile, CursorShape.IBeam, AllSettings.iBeamMouseHotspot),
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_crosshair_title), stringResource(R.string.settings_control_mouse_pointer_common_summary), crossHairPointerFile, CursorShape.CrossHair, AllSettings.crossHairMouseHotspot),
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_resize_ns_title), stringResource(R.string.settings_control_mouse_pointer_resize_ns_summary), resizeNSPointerFile, CursorShape.ResizeNS, AllSettings.resizeNSMouseHotspot),
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_resize_ew_title), stringResource(R.string.settings_control_mouse_pointer_resize_ew_summary), resizeEWPointerFile, CursorShape.ResizeEW, AllSettings.resizeEWMouseHotspot),
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_resize_all_title), stringResource(R.string.settings_control_mouse_pointer_common_summary), resizeAllPointerFile, CursorShape.ResizeAll, AllSettings.resizeAllMouseHotspot),
+        AfMouseType(stringResource(R.string.settings_control_mouse_pointer_not_allowed_title), stringResource(R.string.settings_control_mouse_pointer_not_allowed_summary), notAllowedPointerFile, CursorShape.NotAllowed, AllSettings.notAllowedMouseHotspot)
+    )
+    var selected by remember { mutableIntStateOf(0) }
+    val shape = AfCutShape(18.dp)
+
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .fillMaxHeight(0.92f)
+                .afHud(shape)
+                .clip(shape)
+                .background(AfNavy.copy(alpha = 0.92f))
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            //Lista de tipos
+            Column(modifier = Modifier.width(260.dp).fillMaxHeight()) {
+                Text("Estilo do mouse virtual", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Escolha o tipo de setinha para trocar",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                LazyColumn(
+                    modifier = Modifier.weight(1f).padding(vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(types.size) { i ->
+                        val t = types[i]
+                        val sel = i == selected
+                        val itemShape = AfCutShape(10.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .afGlow(itemShape, if (sel) AfAccent else AfBorder, if (sel) 1.2f else 0.6f)
+                                .clip(itemShape)
+                                .background(if (sel) AfAccent.copy(alpha = 0.16f) else Color.Black.copy(alpha = 0.25f))
+                                .afClick { selected = i }
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.4f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                MousePointer(
+                                    mouseSize = 24.dp,
+                                    cursorShape = t.shape,
+                                    mouseFile = t.file,
+                                    centerIcon = true,
+                                    triggerRefresh = 0,
+                                    crossfade = false
+                                )
+                            }
+                            Text(t.title, style = MaterialTheme.typography.titleSmall, maxLines = 2)
+                        }
+                    }
+                }
+                AfOutlineButton(text = "Fechar", modifier = Modifier.fillMaxWidth(), onClick = onClose)
+            }
+
+            //Detalhes do tipo selecionado
+            val type = types[selected]
+            key(selected) {
+                AfMouseTypeDetail(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    type = type,
+                    mouseSize = mouseSize,
+                    submitError = submitError
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AfMouseTypeDetail(
+    modifier: Modifier,
+    type: AfMouseType,
+    mouseSize: Int,
+    submitError: (ErrorViewModel.ThrowableMessage) -> Unit
+) {
+    val context = LocalContext.current
+    var triggerState by remember { mutableIntStateOf(0) }
+    var fileExists by remember { mutableStateOf(false) }
+    var operation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
+
+    LaunchedEffect(triggerState) {
+        fileExists = withContext(Dispatchers.IO) { type.file.exists() }
+    }
+
+    MousePointerOperation(
+        operation = operation,
+        changeOperation = { operation = it },
+        mousePointerFile = type.file,
+        hotspot = type.hotspot,
+        cursorShape = type.shape,
+        onRefresh = { triggerState++ }
+    )
+
+    val filePicker = rememberLauncherForActivityResult(
+        contract = MediaPickerContract(allowImages = true, allowVideos = false, allowMultiple = false)
+    ) { result ->
+        if (result != null) {
+            TaskSystem.submitTask(
+                Task.runTask(
+                    dispatcher = Dispatchers.IO,
+                    task = {
+                        context.copyLocalFile(result[0], type.file)
+                        if (!type.file.isImageFile()) error("The selected file is not an image!")
+                        triggerState++
+                    },
+                    onError = { th ->
+                        FileUtils.deleteQuietly(type.file)
+                        submitError(
+                            ErrorViewModel.ThrowableMessage(
+                                title = androidText(R.string.error_import_image),
+                                message = androidText(th.getMessageOrToString())
+                            )
+                        )
+                    }
+                )
+            )
+        }
+    }
+
+    val panel = AfCutShape(14.dp)
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        //Cabeçalho: atual + descrição
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .afGlow(panel, AfBorder, 0.7f)
+                .clip(panel)
+                .background(Color.Black.copy(alpha = 0.35f))
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier = Modifier.size(84.dp).clip(AfCutShape(12.dp)).background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    MousePointer(
+                        mouseSize = mouseSize.dp,
+                        cursorShape = type.shape,
+                        mouseFile = type.file,
+                        centerIcon = true,
+                        triggerRefresh = triggerState,
+                        crossfade = true
+                    )
+                }
+                Text("Atual", style = MaterialTheme.typography.labelMedium)
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(type.title, style = MaterialTheme.typography.titleMedium)
+                Text(type.summary, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    if (fileExists) "● Usando uma imagem personalizada" else "● Usando a setinha padrão do launcher",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AfAccent
+                )
+            }
+        }
+
+        //Ações
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            AfButton(text = "Escolher imagem", modifier = Modifier.weight(1f)) { filePicker.launch(Unit) }
+            AfOutlineButton(text = "Definir ponta", modifier = Modifier.weight(1f)) {
+                if (operation == MousePointerOperation.None) operation = MousePointerOperation.Hotspot
+            }
+        }
+        if (fileExists) {
+            AfOutlineButton(text = "Redefinir para o padrão", modifier = Modifier.fillMaxWidth()) {
+                if (operation == MousePointerOperation.None) operation = MousePointerOperation.PreReset
+            }
+        }
+
+        //Guia
+        AfMouseGuide(
+            title = "COMO TROCAR, PASSO A PASSO",
+            items = listOf(
+                "Baixe um pacote de cursores (geralmente vem em .zip com vários arquivos PNG, GIF ou WEBP) e extraia no seu celular.",
+                "Veja qual arquivo combina com cada tipo: a seta normal vai em Padrão, a mãozinha em Mão, o cursor em forma de I em Digitar, e assim por diante.",
+                "Toque no tipo certo na lista da esquerda e depois em Escolher imagem. Selecione o arquivo correspondente.",
+                "Toque em Definir ponta e marque o ponto exato que faz o clique. Na seta normal é a pontinha de cima; na mira é o centro.",
+                "Repita para os outros tipos. Para voltar à setinha original do launcher, toque em Redefinir."
+            ),
+            numbered = true
+        )
+        AfMouseGuide(
+            title = "DICAS IMPORTANTES",
+            items = listOf(
+                "Use imagens com fundo transparente, de preferência quadradas (32×32 ou 64×64). PNG, GIF e WEBP animados funcionam.",
+                "Se o clique estiver saindo no lugar errado, o problema é a ponta (hotspot). Ajuste em Definir ponta.",
+                "Somente o tipo Padrão funciona em todas as versões. Os outros tipos só aparecem no Minecraft 1.21.9 ou mais novo, porque é o próprio jogo que pede a troca da setinha.",
+                "O tamanho da setinha é ajustado em Tamanho do Mouse Virtual, logo abaixo do botão de estilo nos Ajustes de Toque."
+            ),
+            numbered = false
+        )
+    }
+}
+
+@Composable
+private fun AfMouseGuide(title: String, items: List<String>, numbered: Boolean) {
+    val panel = AfCutShape(14.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .afGlow(panel, AfBorder, 0.6f)
+            .clip(panel)
+            .background(Color.Black.copy(alpha = 0.3f))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(title, style = MaterialTheme.typography.labelLarge, color = AfAccent)
+        items.forEachIndexed { i, text ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+                Box(
+                    modifier = Modifier.size(24.dp).clip(CircleShape).background(AfAccent.copy(alpha = 0.25f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(if (numbered) "${i + 1}" else "✦", style = MaterialTheme.typography.labelMedium)
+                }
+                Text(text, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+            }
         }
     }
 }

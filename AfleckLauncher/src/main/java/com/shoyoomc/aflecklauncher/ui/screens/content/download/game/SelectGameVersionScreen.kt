@@ -37,6 +37,21 @@ import androidx.compose.ui.platform.LocalContext
 import com.shoyoomc.aflecklauncher.ui.screens.content.elements.majorVersionKey
 import com.shoyoomc.aflecklauncher.ui.screens.content.elements.versionBackgroundRes
 import com.shoyoomc.aflecklauncher.ui.screens.content.elements.versionUpdateName
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.key
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.text.font.FontWeight
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfOutlineButton
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.afClick
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
 import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
 import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
 import androidx.compose.animation.core.Animatable
@@ -80,6 +95,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
@@ -522,6 +538,30 @@ private fun List<MinecraftVersion>.groupByGameVersion(context: Context): List<Ve
         .sortedByDescending { group -> group.versions.firstOrNull()?.version?.releaseTime ?: "" }
 }
 
+private val GroupPalette = listOf(
+    Color(0xFF4FD8FF), Color(0xFFFF9A3C), Color(0xFFFF6BD6), Color(0xFF55E08A),
+    Color(0xFFFFD84A), Color(0xFFFF5A4A), Color(0xFFA97BFF), Color(0xFF4A9BFF)
+)
+
+private fun groupColor(key: String): Color =
+    GroupPalette[(key.hashCode() and 0x7fffffff) % GroupPalette.size]
+
+private fun MinecraftVersion.eyebrow(): String = when (type) {
+    MinecraftVersion.Type.Release -> "RELEASE"
+    MinecraftVersion.Type.Snapshot -> "SNAPSHOT"
+    MinecraftVersion.Type.AprilFools -> "APRIL FOOLS"
+    MinecraftVersion.Type.OldBeta -> "BETA"
+    MinecraftVersion.Type.OldAlpha -> "ALPHA"
+    else -> "MC"
+}
+
+@Composable
+private fun groupSubtitle(group: VersionGroup, context: Context): String {
+    versionUpdateName(group.key)?.let { return it }
+    if (group.key == "26") return "Drops de 2026"
+    return group.versions.firstOrNull()?.typeLabel(context) ?: ""
+}
+
 @Composable
 private fun VersionList(
     modifier: Modifier = Modifier,
@@ -531,8 +571,8 @@ private fun VersionList(
 ) {
     val context = LocalContext.current
     val groups = remember(versions) { versions.groupByGameVersion(context) }
-    val rows = remember(groups) { groups.chunked(2) }
-    var expandedKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val rows = remember(groups) { groups.chunked(3) }
+    var openKey by rememberSaveable { mutableStateOf<String?>(null) }
 
     val scrollState = rememberLazyListState()
     LazyColumn(
@@ -555,60 +595,30 @@ private fun VersionList(
                         VersionGroupCard(
                             modifier = Modifier.weight(1f),
                             group = group,
-                            expanded = expandedKey == group.key,
-                            onClick = {
-                                expandedKey = if (expandedKey == group.key) null else group.key
-                            }
+                            subtitle = groupSubtitle(group, context),
+                            onClick = { openKey = group.key }
                         )
                     }
-                    if (rowGroups.size == 1) {
+                    repeat(3 - rowGroups.size) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
-
-            item(key = "g-exp-$rowIndex") {
-                rowGroups.forEach { group ->
-                    AnimatedVisibility(
-                        visible = expandedKey == group.key,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
-                        BoxWithConstraints(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 6.dp)
-                        ) {
-                            val columns = (this.maxWidth / 180.dp).toInt().coerceIn(2, 4)
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                group.versions.chunked(columns).forEach { rowVersions ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(IntrinsicSize.Max),
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        rowVersions.forEach { version ->
-                                            VersionItemLayout(
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .fillMaxHeight(),
-                                                version = version,
-                                                onClick = { onVersionSelect(version) },
-                                                onAccessWiki = { wikiUrl -> openLink(wikiUrl) },
-                                            )
-                                        }
-                                        repeat(columns - rowVersions.size) {
-                                            Spacer(modifier = Modifier.weight(1f))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
+    }
+
+    val open = groups.firstOrNull { it.key == openKey }
+    if (open != null) {
+        VersionGroupDialog(
+            group = open,
+            subtitle = groupSubtitle(open, context),
+            onClose = { openKey = null },
+            onInstall = { version ->
+                openKey = null
+                onVersionSelect(version)
+            },
+            openLink = openLink
+        )
     }
 }
 
@@ -616,85 +626,229 @@ private fun VersionList(
 private fun VersionGroupCard(
     modifier: Modifier = Modifier,
     group: VersionGroup,
-    expanded: Boolean,
-    onClick: () -> Unit,
-    shape: Shape = MaterialTheme.shapes.large
+    subtitle: String,
+    onClick: () -> Unit
 ) {
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        label = "groupArrowRotation"
-    )
-    Surface(
-        modifier = modifier.afGlow(shape, AfBorder, 0.6f),
-        onClick = onClick,
-        shape = shape,
-        color = Color.Transparent
+    val accent = groupColor(group.key)
+    val shape = AfCutShape(18.dp)
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .afGlow(shape, accent, 1.2f)
+            .clip(shape)
+            .afClick(onClick)
     ) {
+        Image(
+            painter = painterResource(group.bgRes),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
         Box(
             modifier = Modifier
-                .height(100.dp)
-                .clip(shape)
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Black.copy(alpha = 0.30f), Color.Black.copy(alpha = 0.78f))
+                    )
+                )
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Image(
-                painter = painterResource(group.bgRes),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+            Text(
+                text = "MC // " + (group.versions.firstOrNull()?.eyebrow() ?: "MC"),
+                style = MaterialTheme.typography.labelSmall,
+                color = accent,
+                letterSpacing = 2.sp
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                Color.Black.copy(alpha = 0.25f),
-                                Color.Black.copy(alpha = 0.70f)
-                            )
-                        )
-                    )
+            Text(
+                text = group.key,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = accent.copy(alpha = 0.55f).compositeOver(Color.White)
             )
-            Row(
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+                maxLines = 2
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .afGlow(CircleShape, accent, 0.9f)
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                text = stringResource(R.string.download_game_group_version_count, group.versions.size),
+                style = MaterialTheme.typography.labelLarge,
+                color = accent
+            )
+            Text(
+                text = "Mais recente: " + (group.versions.firstOrNull()?.version?.id ?: ""),
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.White.copy(alpha = 0.85f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun VersionGroupDialog(
+    group: VersionGroup,
+    subtitle: String,
+    onClose: () -> Unit,
+    onInstall: (MinecraftVersion) -> Unit,
+    openLink: (String) -> Unit
+) {
+    val accent = groupColor(group.key)
+    val shape = AfCutShape(18.dp)
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .fillMaxHeight(0.92f)
+                .afHud(shape)
+                .clip(shape)
+                .background(AfNavy.copy(alpha = 0.94f))
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            //Painel esquerdo
+            val left = AfCutShape(16.dp)
+            Column(
+                modifier = Modifier
+                    .width(240.dp)
+                    .fillMaxHeight()
+                    .afGlow(left, accent, 1.0f)
+                    .clip(left)
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Text(
-                        text = group.key,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        maxLines = 1
-                    )
-                    versionUpdateName(group.key)?.let { updateName ->
+                Text(
+                    "CATEGORIA // MINECRAFT",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accent,
+                    letterSpacing = 2.sp
+                )
+                Text(
+                    group.key,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = accent.copy(alpha = 0.55f).compositeOver(Color.White)
+                )
+                Text(subtitle, style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Image(
+                    painter = painterResource(group.bgRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .afGlow(AfCutShape(12.dp), accent, 0.8f)
+                        .clip(AfCutShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                Text(
+                    stringResource(R.string.download_game_group_version_count, group.versions.size),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = accent
+                )
+                Text(
+                    "Toque em uma versão para escolher os mod loaders e instalar.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                AfOutlineButton(text = "Fechar", modifier = Modifier.fillMaxWidth(), onClick = onClose)
+            }
+
+            //Lista de versões
+            val listState = rememberLazyListState()
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(group.versions.size) { index ->
+                    val version = group.versions[index]
+                    val (_, _, wikiUrl, _) = getVersionComponents(version)
+                    val rowShape = AfCutShape(12.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .afGlow(rowShape, if (index == 0) accent else AfBorder, if (index == 0) 1.2f else 0.6f)
+                            .clip(rowShape)
+                            .background(Color.Black.copy(alpha = 0.30f))
+                            .afClick { onInstall(version) }
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         Text(
-                            text = updateName,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color.White.copy(alpha = 0.85f),
-                            maxLines = 1
+                            text = "%02d".format(index + 1),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = accent
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = version.version.id,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (index == 0) {
+                                    Text(
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .background(accent)
+                                            .padding(horizontal = 8.dp, vertical = 2.dp),
+                                        text = "MAIS RECENTE",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                            Text(
+                                modifier = Modifier.alpha(0.7f),
+                                text = formatDate(
+                                    input = version.version.releaseTime,
+                                    pattern = stringResource(R.string.date_format)
+                                ),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                        wikiUrl?.let { url ->
+                            IconButton(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .afGlow(CircleShape, AfBorder, 0.7f),
+                                onClick = { openLink(url) }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_link),
+                                    contentDescription = "Wiki"
+                                )
+                            }
+                        }
+                        AfButton(
+                            modifier = Modifier.width(130.dp),
+                            text = "Instalar",
+                            icon = R.drawable.ic_download,
+                            onClick = { onInstall(version) }
                         )
                     }
-                    Text(
-                        text = stringResource(
-                            R.string.download_game_group_version_count,
-                            group.versions.size
-                        ),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White.copy(alpha = 0.7f),
-                        maxLines = 1
-                    )
                 }
-                Icon(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .rotate(arrowRotation),
-                    painter = painterResource(R.drawable.ic_arrow_drop_down_rounded),
-                    contentDescription = null,
-                    tint = Color.White
-                )
             }
         }
     }
