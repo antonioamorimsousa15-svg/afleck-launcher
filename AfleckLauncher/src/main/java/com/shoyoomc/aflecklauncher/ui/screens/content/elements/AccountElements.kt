@@ -25,14 +25,6 @@ import com.shoyoomc.aflecklauncher.ui.screens.main.AfModelStage
 import com.shoyoomc.aflecklauncher.ui.screens.main.AfDim
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.sp
-import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
-import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
-import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
-import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
-import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
-import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
-import android.content.Context
-import android.graphics.Bitmap
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +35,14 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape
+import com.shoyoomc.aflecklauncher.ui.screens.main.afGlow
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy
+import com.shoyoomc.aflecklauncher.ui.screens.main.AfText
+import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -2052,7 +2052,6 @@ private fun getSkinAvatar(
     )
     return avatar
 }
-
 
 /** Skins salvas no aparelho (Guarda-roupa). O nome do arquivo termina em _slim ou _wide. */
 private object AfSavedSkins {
