@@ -125,7 +125,7 @@ private fun AfHomeContent(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // ---------- Linha de cima: Bem-vindo + Versão do Minecraft ----------
-        Row(Modifier.fillMaxWidth().height(290.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().height(250.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             // Bem-vindo de volta
             AfPanel(Modifier.weight(2.2f).fillMaxHeight()) {
                 AfCardBg(homeSlot)
@@ -183,9 +183,9 @@ private fun AfHomeContent(
             }
         }
         // ---------- Meio: Suas versões + Conta + Texturas/Shaders, com a imagem 9:16 ao lado ----------
-        Row(Modifier.fillMaxWidth().height(560.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().height(435.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Column(Modifier.weight(3.1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(Modifier.fillMaxWidth().height(280.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().height(230.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             // Suas versões
             AfPanel(Modifier.weight(1.6f).fillMaxHeight()) {
                 AfCardBg(versSlot)
@@ -274,8 +274,8 @@ private fun AfHomeContent(
             }
         }
         Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_styler, "Texturas", "Pacotes de texturas da sua versão", onOpenVersions)
-            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_lightbulb, "Shaders", "Shaders da sua versão", onOpenVersions)
+            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_styler, "Texturas", "Mude o visual do jogo com texturas novas.", "Ver texturas ›", onOpenVersions)
+            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_lightbulb, "Shaders", "Deixe seu mundo mais bonito com shaders.", "Explorar ›", onOpenVersions)
         }
         }
             // Imagem 9:16 (plano de fundo)
@@ -295,13 +295,25 @@ private fun AfHomeContent(
             }
         }
         // ---------- Linha de baixo: Texturas, Shaders, Configurações Rápidas ----------
-        Row(Modifier.fillMaxWidth().height(260.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().height(228.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             AfPanel(Modifier.weight(1.6f).fillMaxHeight()) {
                 Column(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_star_filled), null, tint = AfAccent, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(8.dp))
                         Text("Funções Extras", color = AfText, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Row(
+                        Modifier.fillMaxWidth().height(72.dp).afRect(AfBorder, radius = 14.dp).afClick(onOpenSettings).padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AfIconCircle(R.drawable.ic_star_filled, size = 44.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Novidades", color = AfText, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text("Veja o que há de novo no Afleck", color = AfAccent, fontSize = 12.sp)
+                        }
+                        Icon(painterResource(R.drawable.ic_keyboard_arrow_right), null, tint = AfDim, modifier = Modifier.size(24.dp))
                     }
                     Row(
                         Modifier.fillMaxWidth().height(52.dp).afRect(AfBorder, radius = 14.dp).padding(horizontal = 14.dp),
@@ -354,16 +366,25 @@ private fun HomeChip(text: String) {
 }
 
 @Composable
-private fun HomeShortcutCard(modifier: Modifier, icon: Int, title: String, subtitle: String, onClick: () -> Unit) {
+private fun HomeShortcutCard(modifier: Modifier, icon: Int, title: String, subtitle: String, buttonText: String, onClick: () -> Unit) {
     AfPanel(modifier.fillMaxHeight()) {
-        Column(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(painterResource(icon), null, tint = AfText, modifier = Modifier.size(22.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(title, color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Box(Modifier.afClick(onClick)) { AfIconCircle(R.drawable.ic_edit_outlined, size = 34.dp) }
             }
-            Text(subtitle, color = AfDim, fontSize = 12.sp)
+            Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    Modifier.weight(0.9f).fillMaxHeight().afRect(AfBorder, radius = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) { Icon(painterResource(icon), null, tint = AfAccent, modifier = Modifier.size(44.dp)) }
+                Column(Modifier.weight(1.3f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+                    Text(subtitle, color = AfText, fontSize = 13.sp)
+                    AfButton(buttonText, Modifier.fillMaxWidth().height(40.dp), onClick = onClick)
+                }
+            }
         }
     }
 }

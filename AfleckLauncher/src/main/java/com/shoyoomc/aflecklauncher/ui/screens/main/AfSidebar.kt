@@ -58,7 +58,7 @@ fun AfSidebar(
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(10.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(7.dp)
         ) {
             NavPill(R.drawable.ic_home_filled, "Início", inHome, onHome)
             NavPill(R.drawable.ic_sports_esports_outlined, "Versões", inVersions, onVersions)
@@ -73,23 +73,23 @@ fun AfSidebar(
 private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> Unit) {
     val color = if (selected) AfAccent else AfBorder
     Row(
-        modifier = Modifier.fillMaxWidth().height(62.dp)
+        modifier = Modifier.fillMaxWidth().height(50.dp)
             .afDarkGlass(color, selected, 28.dp)
             .afClick(onClick)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(42.dp)
                 .clip(CircleShape).border(1.2.dp, color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(painterResource(icon), null, tint = AfText, modifier = Modifier.size(24.dp))
+            Icon(painterResource(icon), null, tint = AfText, modifier = Modifier.size(22.dp))
         }
         Spacer(Modifier.width(12.dp))
         Text(
             label, color = AfText,
-            fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1
+            fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1
         )
     }
 }

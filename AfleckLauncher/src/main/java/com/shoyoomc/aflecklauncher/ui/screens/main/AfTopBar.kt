@@ -65,20 +65,20 @@ fun AfTopBar(
         }
         Pill {
             Box(
-                Modifier.size(46.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
+                Modifier.size(40.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
                 contentAlignment = Alignment.Center
-            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(28.dp)) }
+            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(24.dp)) }
             Spacer(Modifier.width(10.dp))
-            Text(sectionTitle, color = AfText, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(sectionTitle, color = AfText, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
         Spacer(Modifier.weight(1f))
         Pill(onClick = onFiles) {
-            AfIconCircle(R.drawable.ic_folder_filled, size = 46.dp, filled = true)
+            AfIconCircle(R.drawable.ic_folder_filled, size = 40.dp, filled = true)
             Spacer(Modifier.width(10.dp))
-            Text("Arquivos", color = AfText, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text("Arquivos", color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
         Pill(onClick = onUser) {
-            AfIconCircle(R.drawable.ic_person_filled, size = 46.dp)
+            AfIconCircle(R.drawable.ic_person_filled, size = 40.dp)
             Spacer(Modifier.width(10.dp))
             Text(
                 account?.username ?: "Adicionar Conta", color = AfText, fontSize = 17.sp,
