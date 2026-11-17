@@ -48,7 +48,7 @@ fun AfSidebar(
 ) {
     val panelShape = androidx.compose.foundation.shape.RoundedCornerShape(30.dp)
     Box(
-        modifier = modifier.width(190.dp).fillMaxHeight()
+        modifier = modifier.width(215.dp).fillMaxHeight()
             .clip(panelShape)
             .background(
                 androidx.compose.ui.graphics.Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.55f), AfNavy.copy(alpha = 0.78f))),
@@ -57,8 +57,8 @@ fun AfSidebar(
             .border(1.4.dp, AfBorder, panelShape)
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(8.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth().padding(10.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             NavPill(R.drawable.ic_home_filled, "Início", inHome, onHome)
             NavPill(R.drawable.ic_sports_esports_outlined, "Versões", inVersions, onVersions)
@@ -73,23 +73,23 @@ fun AfSidebar(
 private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> Unit) {
     val color = if (selected) AfAccent else AfBorder
     Row(
-        modifier = Modifier.fillMaxWidth().height(56.dp)
+        modifier = Modifier.fillMaxWidth().height(62.dp)
             .afDarkGlass(color, selected, 28.dp)
             .afClick(onClick)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(42.dp)
+            modifier = Modifier.size(48.dp)
                 .clip(CircleShape).border(1.2.dp, color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(painterResource(icon), null, tint = AfText, modifier = Modifier.size(21.dp))
+            Icon(painterResource(icon), null, tint = AfText, modifier = Modifier.size(24.dp))
         }
         Spacer(Modifier.width(12.dp))
         Text(
             label, color = AfText,
-            fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1
+            fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1
         )
     }
 }

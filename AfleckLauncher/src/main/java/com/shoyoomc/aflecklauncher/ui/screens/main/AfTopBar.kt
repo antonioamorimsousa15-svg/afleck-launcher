@@ -48,34 +48,40 @@ fun AfTopBar(
     ) {
         Pill(onClick = onLogo) {
             Box(
-                Modifier.size(42.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
+                Modifier.size(54.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
                 contentAlignment = Alignment.Center
-            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(26.dp)) }
+            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(32.dp)) }
             Spacer(Modifier.width(10.dp))
             Column {
-                Text("Afleck", color = AfText, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-                Text("LAUNCHER · v" + BuildConfig.VERSION_NAME, color = AfAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                Text("Afleck", color = AfText, fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("LAUNCHER", color = AfDim, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Spacer(Modifier.width(6.dp))
+                    Box(Modifier.border(1.dp, AfAccent, CircleShape).padding(horizontal = 8.dp, vertical = 1.dp)) {
+                        Text("v" + BuildConfig.VERSION_NAME, color = AfAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    }
+                }
             }
         }
         Pill {
             Box(
-                Modifier.size(38.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
+                Modifier.size(46.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
                 contentAlignment = Alignment.Center
-            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(22.dp)) }
+            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(28.dp)) }
             Spacer(Modifier.width(10.dp))
-            Text(sectionTitle, color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(sectionTitle, color = AfText, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
         Spacer(Modifier.weight(1f))
         Pill(onClick = onFiles) {
-            AfIconCircle(R.drawable.ic_folder_filled, size = 38.dp, filled = true)
+            AfIconCircle(R.drawable.ic_folder_filled, size = 46.dp, filled = true)
             Spacer(Modifier.width(10.dp))
-            Text("Arquivos", color = AfText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text("Arquivos", color = AfText, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
         Pill(onClick = onUser) {
-            AfIconCircle(R.drawable.ic_person_filled, size = 38.dp)
+            AfIconCircle(R.drawable.ic_person_filled, size = 46.dp)
             Spacer(Modifier.width(10.dp))
             Text(
-                account?.username ?: "Adicionar Conta", color = AfText, fontSize = 15.sp,
+                account?.username ?: "Adicionar Conta", color = AfText, fontSize = 17.sp,
                 fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis
             )
         }

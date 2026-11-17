@@ -125,7 +125,7 @@ private fun AfHomeContent(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // ---------- Linha de cima: Bem-vindo + Versão do Minecraft ----------
-        Row(Modifier.fillMaxWidth().height(200.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().height(290.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             // Bem-vindo de volta
             AfPanel(Modifier.weight(2.2f).fillMaxHeight()) {
                 AfCardBg(homeSlot)
@@ -182,8 +182,10 @@ private fun AfHomeContent(
                 }
             }
         }
-        // ---------- Linha do meio: Suas versões + Conta + imagem ----------
-        Row(Modifier.fillMaxWidth().height(200.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        // ---------- Meio: Suas versões + Conta + Texturas/Shaders, com a imagem 9:16 ao lado ----------
+        Row(Modifier.fillMaxWidth().height(560.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(3.1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().height(280.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             // Suas versões
             AfPanel(Modifier.weight(1.6f).fillMaxHeight()) {
                 AfCardBg(versSlot)
@@ -270,6 +272,12 @@ private fun AfHomeContent(
                     AfOutlineButton("Gerenciar Conta", Modifier.fillMaxWidth(), R.drawable.ic_settings_filled, onOpenAccounts)
                 }
             }
+        }
+        Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_styler, "Texturas", "Pacotes de texturas da sua versão", onOpenVersions)
+            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_lightbulb, "Shaders", "Shaders da sua versão", onOpenVersions)
+        }
+        }
             // Imagem 9:16 (plano de fundo)
             Box(
                 Modifier.weight(0.9f).fillMaxHeight().clip(AfCutShape(16.dp))
@@ -287,9 +295,24 @@ private fun AfHomeContent(
             }
         }
         // ---------- Linha de baixo: Texturas, Shaders, Configurações Rápidas ----------
-        Row(Modifier.fillMaxWidth().height(150.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_styler, "Texturas", "Pacotes de texturas da sua versão", onOpenVersions)
-            HomeShortcutCard(Modifier.weight(1f), R.drawable.ic_lightbulb, "Shaders", "Shaders da sua versão", onOpenVersions)
+        Row(Modifier.fillMaxWidth().height(260.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            AfPanel(Modifier.weight(1.6f).fillMaxHeight()) {
+                Column(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_star_filled), null, tint = AfAccent, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Funções Extras", color = AfText, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Row(
+                        Modifier.fillMaxWidth().height(52.dp).afRect(AfBorder, radius = 14.dp).padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(painterResource(R.drawable.ic_add), null, tint = AfDim, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(10.dp))
+                        Text("Mais funções em breve", color = AfDim, fontSize = 14.sp)
+                    }
+                }
+            }
             AfPanel(Modifier.weight(1.4f).fillMaxHeight()) {
                 AfCardBg(quickSlot)
                 Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
