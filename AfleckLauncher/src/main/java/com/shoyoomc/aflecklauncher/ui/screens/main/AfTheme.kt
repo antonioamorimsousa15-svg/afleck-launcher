@@ -87,11 +87,11 @@ object AfThemeState {
         private set
     var contrast by mutableIntStateOf(0)
         private set
-    var panelOpacity by mutableIntStateOf(60)
+    var panelOpacity by mutableIntStateOf(15)
         private set
     var animate by mutableStateOf(false)
         private set
-    var uiScale by mutableIntStateOf(90)
+    var uiScale by mutableIntStateOf(100)
         private set
 
     private var prefs: SharedPreferences? = null
@@ -103,27 +103,27 @@ object AfThemeState {
         themeId = p.getString("theme.id", "branca") ?: "branca"
         vibrance = p.getInt("theme.vibrance", 0)
         contrast = p.getInt("theme.contrast", 0)
-        panelOpacity = p.getInt("theme.panelOpacity", 60)
+        panelOpacity = p.getInt("theme.panelOpacityClear", 15)
         animate = p.getBoolean("theme.animate", false)
-        uiScale = p.getInt("theme.uiScale", 90)
+        uiScale = p.getInt("theme.uiScale100", 100)
     }
 
     fun chooseTheme(id: String) { themeId = id; saveAll() }
     fun changeVibrance(v: Int) { vibrance = v.coerceIn(-100, 100); saveAll() }
     fun changeContrast(v: Int) { contrast = v.coerceIn(-100, 100); saveAll() }
-    fun changePanelOpacity(v: Int) { panelOpacity = v.coerceIn(30, 100); saveAll() }
+    fun changePanelOpacity(v: Int) { panelOpacity = v.coerceIn(0, 100); saveAll() }
     fun changeAnimate(v: Boolean) { animate = v; saveAll() }
     fun changeUiScale(v: Int) { uiScale = v.coerceIn(60, 110); saveAll() }
-    fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 60; animate = false; uiScale = 90; saveAll() }
+    fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 15; animate = false; uiScale = 100; saveAll() }
 
     private fun saveAll() {
         prefs?.edit()
             ?.putString("theme.id", themeId)
             ?.putInt("theme.vibrance", vibrance)
             ?.putInt("theme.contrast", contrast)
-            ?.putInt("theme.panelOpacity", panelOpacity)
+            ?.putInt("theme.panelOpacityClear", panelOpacity)
             ?.putBoolean("theme.animate", animate)
-            ?.putInt("theme.uiScale", uiScale)
+            ?.putInt("theme.uiScale100", uiScale)
             ?.apply()
     }
 
@@ -189,7 +189,7 @@ internal fun AfPanel(
 
 /** Retângulo arredondado só com borda (sem fundo, sem sombra). */
 internal fun Modifier.afRect(color: Color, selected: Boolean = false, radius: Dp = 14.dp): Modifier {
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius)
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(14.dp))
     return this.clip(shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
 }
 
@@ -276,21 +276,7 @@ internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: C
         val h = size.height
         val thin = 1.dp.toPx()
         clipPath(o.afPath()) {
-            // vidro: leve véu claro, mais forte em cima
-            drawRect(
-                Brush.verticalGradient(listOf(Color.White.copy(alpha = if (sel) 0.16f else 0.10f), Color.White.copy(alpha = 0.02f))),
-            )
-            if (sel) drawRect(color.copy(alpha = 0.14f))
-            // luz que entra pelas bordas
-            afOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(10.dp.toPx()))
-            afOutline(o, tint.copy(alpha = 0.10f), style = androidx.compose.ui.graphics.drawscope.Stroke(4.dp.toPx()))
-            // reflexo no canto superior esquerdo
-            drawRect(
-                Brush.radialGradient(
-                    listOf(Color.White.copy(alpha = 0.55f), Color.Transparent),
-                    center = Offset(w * 0.12f, 0f), radius = (h * 0.9f).coerceAtLeast(24.dp.toPx())
-                )
-            )
+            if (sel) drawRect(color.copy(alpha = 0.16f))
         }
         // borda fina: clara em cima, mais suave embaixo
         afOutline(
@@ -298,25 +284,13 @@ internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: C
             Brush.verticalGradient(listOf(tint.copy(alpha = 0.85f), tint.copy(alpha = 0.28f), tint.copy(alpha = 0.5f))),
             style = androidx.compose.ui.graphics.drawscope.Stroke(thin)
         )
-        // brilho no meio da base
-        drawLine(
-            Brush.horizontalGradient(listOf(Color.Transparent, tint.copy(alpha = 0.9f), Color.Transparent)),
-            Offset(w * 0.22f, h - thin), Offset(w * 0.78f, h - thin), thin * 1.4f
-        )
     }
 
-/** Moldura HUD: cantos cortados (cortes grandes em cima à esquerda e embaixo à direita, pequenos nos outros). */
+/** Moldura arredondada (estilo Cryo). Mantém o nome AfCutShape para valer em todas as telas. */
 class AfCutShape(private val cut: Dp = 14.dp) : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val w = size.width
-        val h = size.height
-        val c = with(density) { cut.toPx() }.coerceAtMost(minOf(w, h) / 3f)
-        val s = c * 0.35f
-        val p = Path().apply {
-            moveTo(c, 0f); lineTo(w - s, 0f); lineTo(w, s); lineTo(w, h - c)
-            lineTo(w - c, h); lineTo(s, h); lineTo(0f, h - s); lineTo(0f, c); close()
-        }
-        return Outline.Generic(p)
+        val r = with(density) { (cut * 0.9f).coerceAtMost(14.dp).toPx() }.coerceAtMost(minOf(size.width, size.height) / 2f)
+        return Outline.Rounded(androidx.compose.ui.geometry.RoundRect(0f, 0f, size.width, size.height, androidx.compose.ui.geometry.CornerRadius(r, r)))
     }
 }
 
@@ -324,51 +298,17 @@ class AfCutShape(private val cut: Dp = 14.dp) : Shape {
 @Composable
 internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier {
     val base = AfThemeState.base
-    val a = (AfThemeState.panelOpacity / 100f).coerceIn(0.35f, 1f)
+    val a = (AfThemeState.panelOpacity / 100f).coerceIn(0f, 1f)
     val tint = lerp(Color.White, AfAccent, 0.2f)
-    val accent = AfAccent
-    val dark = lerp(base, Color.Black, 0.8f)
-    val light = lerp(base, Color.White, 0.35f)
     return this
-        .background(
-            Brush.linearGradient(
-                0f to dark.copy(alpha = a),
-                0.55f to lerp(dark, base, 0.4f).copy(alpha = a),
-                1f to light.copy(alpha = a * 0.75f),
-                start = Offset(0f, 0f), end = Offset(1400f, 1000f)
-            ),
-            shape
-        )
+        .background(base.copy(alpha = a), shape)
         .drawWithContent {
             drawContent()
             val o = shape.createOutline(size, layoutDirection, this)
-            clipPath(o.afPath()) {
-                // luz clara que sobe das bordas (como no exemplo)
-                afOutline(o, tint.copy(alpha = 0.07f), style = androidx.compose.ui.graphics.drawscope.Stroke(34.dp.toPx()))
-                afOutline(o, tint.copy(alpha = 0.09f), style = androidx.compose.ui.graphics.drawscope.Stroke(18.dp.toPx()))
-                afOutline(o, tint.copy(alpha = 0.12f), style = androidx.compose.ui.graphics.drawscope.Stroke(8.dp.toPx()))
-            }
             afOutline(
                 o,
                 Brush.verticalGradient(listOf(tint.copy(alpha = 0.95f), tint.copy(alpha = 0.55f))),
                 style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx())
             )
-            // detalhes de HUD (só em cartões grandes): moldura interna, parafuso (+) e aba na base
-            val w = size.width
-            val h = size.height
-            if (w > 150.dp.toPx() && h > 60.dp.toPx()) {
-                val inset = 5.dp.toPx()
-                withTransform({ scale((w - 2 * inset) / w, (h - 2 * inset) / h, Offset(w / 2f, h / 2f)) }) {
-                    drawPath(o.afPath(), tint.copy(alpha = 0.32f), style = androidx.compose.ui.graphics.drawscope.Stroke(0.8.dp.toPx()))
-                }
-                val c = Offset(w - 15.dp.toPx(), 14.dp.toPx())
-                drawCircle(accent.copy(alpha = 0.85f), 5.dp.toPx(), c, style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx()))
-                drawLine(accent.copy(alpha = 0.85f), Offset(c.x - 2.5.dp.toPx(), c.y), Offset(c.x + 2.5.dp.toPx(), c.y), 1.dp.toPx())
-                drawLine(accent.copy(alpha = 0.85f), Offset(c.x, c.y - 2.5.dp.toPx()), Offset(c.x, c.y + 2.5.dp.toPx()), 1.dp.toPx())
-                val tab = Path().apply {
-                    moveTo(w * 0.58f, h); lineTo(w * 0.60f, h - 4.dp.toPx()); lineTo(w * 0.78f, h - 4.dp.toPx()); lineTo(w * 0.80f, h); close()
-                }
-                drawPath(tab, accent.copy(alpha = 0.85f))
-            }
         }
 }

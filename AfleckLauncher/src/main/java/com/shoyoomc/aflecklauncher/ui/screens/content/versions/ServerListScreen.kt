@@ -952,7 +952,7 @@ private fun ServerItem(
                     DropdownMenu(
                         expanded = expanded,
                         shape = MaterialTheme.shapes.large,
-                        shadowElevation = 3.dp,
+                        shadowElevation = 0.dp,
                         onDismissRequest = { expanded = false },
                     ) {
                         //刷新服务器
@@ -1227,7 +1227,7 @@ private fun ServerEditDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),

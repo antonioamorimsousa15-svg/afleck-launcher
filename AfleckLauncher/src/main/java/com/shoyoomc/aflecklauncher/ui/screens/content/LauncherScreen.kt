@@ -487,7 +487,7 @@ private fun VersionsContent(
                 .fillMaxWidth()
                 .padding(PaddingValues(horizontal = 12.dp))
                 .padding(bottom = 8.dp),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
             onClick = {
                 onLaunchGame(null)
             },

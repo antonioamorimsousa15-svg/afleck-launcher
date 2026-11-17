@@ -85,7 +85,7 @@ fun ScalingActionButton(
     enabled: Boolean = true,
     shape: Shape = AfCutShape(10.dp),
     colors: ButtonColors = ButtonDefaults.buttonColors(),
-    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
+    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
     border: BorderStroke? = BorderStroke(1.5.dp, com.shoyoomc.aflecklauncher.ui.screens.main.AfBorder),
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit
@@ -285,7 +285,7 @@ fun TooltipIconButton(
             RichTooltip(
                 modifier = Modifier.padding(all = 3.dp),
                 title = { Text(text = tooltipTitle) },
-                shadowElevation = 3.dp
+                shadowElevation = 0.dp,
             ) {
                 Text(text = tooltipMessage)
             }

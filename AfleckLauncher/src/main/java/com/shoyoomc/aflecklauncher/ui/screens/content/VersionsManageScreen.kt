@@ -543,7 +543,7 @@ private fun VersionsLayout(
             val barShape = MaterialTheme.shapes.large
             val barShadowModifier = Modifier.graphicsLayer {
                 if (withShadow) {
-                    shadowElevation = 5.dp.toPx() * listScrolledFraction.value * barShownFraction.value
+                    shadowElevation = 0f
                 }
                 shape = barShape
             }

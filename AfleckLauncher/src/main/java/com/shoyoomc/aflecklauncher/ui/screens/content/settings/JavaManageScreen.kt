@@ -476,7 +476,7 @@ private fun SelectJavaRuntimeDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),

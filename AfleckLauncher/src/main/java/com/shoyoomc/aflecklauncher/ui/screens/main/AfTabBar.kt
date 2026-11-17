@@ -35,7 +35,7 @@ class AfTabSpec(val iconRes: Int, val textRes: Int, val selected: Boolean, val o
 /** Barra de abas em cápsula (01 Minecraft, 02 Mods, ...): aba ativa em degradê, abas espalhadas na largura toda. */
 @Composable
 fun AfTabBar(tabs: List<AfTabSpec>, modifier: Modifier = Modifier) {
-    val capsule = RoundedCornerShape(50)
+    val capsule = RoundedCornerShape(16.dp)
     BoxWithConstraints(
         modifier = modifier
             .afGlow(capsule, AfBorder, 0.8f)

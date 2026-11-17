@@ -50,9 +50,8 @@ fun LinearProgressIndicator(
     Canvas(modifier.height(14.dp)) {
         val w = size.width
         val h = size.height
-        val cut = h * 0.45f
         val frame = Path().apply {
-            moveTo(cut, 0f); lineTo(w, 0f); lineTo(w, h - cut); lineTo(w - cut, h); lineTo(0f, h); lineTo(0f, cut); close()
+            addRoundRect(androidx.compose.ui.geometry.RoundRect(0f, 0f, w, h, androidx.compose.ui.geometry.CornerRadius(4.dp.toPx(), 4.dp.toPx())))
         }
         drawPath(frame, accent.copy(alpha = 0.07f))
         drawPath(frame, accent.copy(alpha = 0.9f), style = Stroke(1.dp.toPx()))

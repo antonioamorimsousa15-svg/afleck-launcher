@@ -220,7 +220,7 @@ fun GamePathItemLayout(
                 DropdownMenu(
                     expanded = menuExpanded,
                     shape = MaterialTheme.shapes.large,
-                    shadowElevation = 3.dp,
+                    shadowElevation = 0.dp,
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     DropdownMenuItem(
@@ -820,7 +820,7 @@ fun VersionItemLayout(
                 DropdownMenu(
                     expanded = menuExpanded,
                     shape = MaterialTheme.shapes.large,
-                    shadowElevation = 3.dp,
+                    shadowElevation = 0.dp,
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     DropdownMenuItem(

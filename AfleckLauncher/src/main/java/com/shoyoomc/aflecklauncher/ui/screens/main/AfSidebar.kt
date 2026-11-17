@@ -65,7 +65,7 @@ private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> 
     val color = if (selected) AfAccent else AfBorder
     Row(
         modifier = Modifier.fillMaxWidth().height(56.dp)
-            .afRect(color, selected, 14.dp)
+            .afRect(color, selected, 28.dp)
             .afClick(onClick)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically

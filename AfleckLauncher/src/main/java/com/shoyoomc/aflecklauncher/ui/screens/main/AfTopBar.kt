@@ -61,7 +61,7 @@ fun AfTopBar(
             Box(
                 Modifier.size(38.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
                 contentAlignment = Alignment.Center
-            ) { Text("❄", color = AfAccent, fontSize = 20.sp) }
+            ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(22.dp)) }
             Spacer(Modifier.width(10.dp))
             Text(sectionTitle, color = AfText, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }

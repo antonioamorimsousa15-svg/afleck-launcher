@@ -136,7 +136,7 @@ fun AfThemeStudioDialog(onClose: () -> Unit) {
                             Text("AJUSTES DE COR", color = AfAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             StudioSlider("Vibração", AfThemeState.vibrance, -100, 100, true) { AfThemeState.changeVibrance(it) }
                             StudioSlider("Contraste", AfThemeState.contrast, -100, 100, true) { AfThemeState.changeContrast(it) }
-                            StudioSlider("Opacidade da interface", AfThemeState.panelOpacity, 30, 100, false) { AfThemeState.changePanelOpacity(it) }
+                            StudioSlider("Opacidade da interface", AfThemeState.panelOpacity, 0, 100, false) { AfThemeState.changePanelOpacity(it) }
                         }
                     }
 

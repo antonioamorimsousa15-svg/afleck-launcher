@@ -145,7 +145,7 @@ fun MultiplayerDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.padding(all = 16.dp),

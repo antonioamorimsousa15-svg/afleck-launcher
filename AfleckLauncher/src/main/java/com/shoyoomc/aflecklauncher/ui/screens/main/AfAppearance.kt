@@ -79,7 +79,7 @@ fun AfAppearance(bgSlot: AfImageSlot, onClose: () -> Unit) {
 
                 SliderRow("Vibração", AfThemeState.vibrance, -100, 100, signed = true) { AfThemeState.changeVibrance(it) }
                 SliderRow("Contraste", AfThemeState.contrast, -100, 100, signed = true) { AfThemeState.changeContrast(it) }
-                SliderRow("Opacidade da interface", AfThemeState.panelOpacity, 30, 100) { AfThemeState.changePanelOpacity(it) }
+                SliderRow("Opacidade da interface", AfThemeState.panelOpacity, 0, 100) { AfThemeState.changePanelOpacity(it) }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {

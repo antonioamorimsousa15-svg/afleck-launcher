@@ -343,20 +343,11 @@ fun AfSlider(
                         )
                     }
 
-                    //seletor hexagonal
+                    //seletor circular
                     val r = 11.dp.toPx()
-                    val hex = Path().apply {
-                        for (i in 0 until 6) {
-                            val ang = Math.toRadians((60.0 * i) - 30.0)
-                            val px = thumbX + (r * Math.cos(ang)).toFloat()
-                            val py = trackY + (r * Math.sin(ang)).toFloat()
-                            if (i == 0) moveTo(px, py) else lineTo(px, py)
-                        }
-                        close()
-                    }
                     drawCircle(accent.copy(alpha = 0.28f), radius = r * 1.9f, center = Offset(thumbX, trackY))
-                    drawPath(hex, color = Color.White)
-                    drawPath(hex, color = accent2, style = Stroke(width = dp1 * 3f))
+                    drawCircle(Color.White, radius = r, center = Offset(thumbX, trackY))
+                    drawCircle(accent2, radius = r, center = Offset(thumbX, trackY), style = Stroke(width = dp1 * 3f))
                     drawCircle(Color(0xFF0A0F14), radius = r * 0.42f, center = Offset(thumbX, trackY))
                 }
         )

@@ -191,7 +191,7 @@ private fun MagnifierWindow(
         shape = MaterialTheme.shapes.medium,
         color = Color.Black,
         border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-        shadowElevation = 6.dp
+        shadowElevation = 0.dp,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             MagnifierViewport(

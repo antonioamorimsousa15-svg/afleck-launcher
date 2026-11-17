@@ -134,7 +134,7 @@ fun StyleCabinetDialog(
                         .padding(all = 3.dp)
                         .heightIn(max = (maxHeight - 6.dp).coerceAtMost(rememberDialogMaxHeight()))
                         .wrapContentHeight(),
-                    shadowElevation = 3.dp,
+                    shadowElevation = 0.dp,
                     color = cardColor(false),
                     contentColor = onCardColor(),
                     shape = MaterialTheme.shapes.extraLarge
@@ -307,7 +307,7 @@ private fun CabinetStyleGridItem(
         DropdownMenu(
             expanded = menuExpanded,
             shape = MaterialTheme.shapes.large,
-            shadowElevation = 3.dp,
+            shadowElevation = 0.dp,
             onDismissRequest = { menuExpanded = false }
         ) {
             DropdownMenuItem(

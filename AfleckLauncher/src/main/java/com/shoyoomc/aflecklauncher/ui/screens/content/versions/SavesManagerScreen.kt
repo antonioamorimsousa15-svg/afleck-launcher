@@ -748,7 +748,7 @@ private fun SaveItemLayout(
                             RichTooltip(
                                 modifier = Modifier.padding(all = 3.dp),
                                 title = { Text(text = stringResource(R.string.saves_manage_info)) },
-                                shadowElevation = 3.dp
+                                shadowElevation = 0.dp,
                             ) {
                                 SaveInfoTooltip(saveData) { seed ->
                                     copyText(COPY_LABEL_SAVE_SEED, seed, context)
@@ -932,7 +932,7 @@ private fun SaveOperationMenu(
         DropdownMenu(
             expanded = menuExpanded,
             shape = MaterialTheme.shapes.large,
-            shadowElevation = 3.dp,
+            shadowElevation = 0.dp,
             onDismissRequest = { menuExpanded = false }
         ) {
             DropdownMenuItem(

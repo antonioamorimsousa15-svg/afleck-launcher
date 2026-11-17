@@ -306,7 +306,7 @@ private fun AdjustingBar(
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surfaceContainerHighest,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        shadowElevation = 3.dp
+        shadowElevation = 0.dp,
     ) {
         Row(
             modifier = Modifier.padding(all = 6.dp),

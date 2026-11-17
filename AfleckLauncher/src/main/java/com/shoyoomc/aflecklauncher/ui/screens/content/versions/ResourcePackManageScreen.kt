@@ -738,7 +738,7 @@ private fun ResourcePackItemLayout(
                             RichTooltip(
                                 modifier = Modifier.padding(all = 3.dp),
                                 title = { Text(text = stringResource(R.string.resource_pack_manage_info)) },
-                                shadowElevation = 3.dp
+                                shadowElevation = 0.dp,
                             ) {
                                 ResourcePackInfoTooltip(resourcePackInfo)
                             }
@@ -799,7 +799,7 @@ private fun ResourcePackOperationMenu(
         DropdownMenu(
             expanded = menuExpanded,
             shape = MaterialTheme.shapes.large,
-            shadowElevation = 3.dp,
+            shadowElevation = 0.dp,
             onDismissRequest = { menuExpanded = false }
         ) {
             DropdownMenuItem(

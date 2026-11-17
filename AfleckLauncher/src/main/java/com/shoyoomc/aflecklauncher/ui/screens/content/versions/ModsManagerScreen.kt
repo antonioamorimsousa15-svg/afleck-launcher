@@ -1491,7 +1491,7 @@ private fun LocalModInfoTooltip(
             RichTooltip(
                 modifier = Modifier.padding(all = 3.dp),
                 title = { Text(text = stringResource(R.string.mods_manage_info)) },
-                shadowElevation = 3.dp
+                shadowElevation = 0.dp,
             ) {
                 Column {
                     //文件大小

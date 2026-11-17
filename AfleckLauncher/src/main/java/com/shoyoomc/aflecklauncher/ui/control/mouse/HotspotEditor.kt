@@ -96,7 +96,7 @@ fun MouseHotspotEditorDialog(
                     .padding(all = 3.dp)
                     .heightIn(max = (maxHeight - 6.dp).coerceAtMost(rememberDialogMaxHeight()))
                     .wrapContentHeight(),
-                shadowElevation = 3.dp,
+                shadowElevation = 0.dp,
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),

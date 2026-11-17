@@ -167,7 +167,7 @@ fun EditWidgetDialog(
                         .fillMaxWidth(0.75f)
                         .fillMaxHeight()
                         .padding(all = 16.dp),
-                    shadowElevation = 3.dp,
+                    shadowElevation = 0.dp,
                     color = cardColor(false),
                     contentColor = onCardColor(),
                     shape = MaterialTheme.shapes.extraLarge

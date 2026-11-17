@@ -69,7 +69,7 @@ fun LogShareMenu(
                     color = cardColor(false),
                     contentColor = onCardColor(),
                     shape = MaterialTheme.shapes.extraLarge,
-                    shadowElevation = 6.dp
+                    shadowElevation = 0.dp,
                 ) {
                     Column(
                         modifier = Modifier

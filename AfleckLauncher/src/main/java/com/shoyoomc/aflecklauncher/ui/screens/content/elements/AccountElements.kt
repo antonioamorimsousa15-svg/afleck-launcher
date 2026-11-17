@@ -498,7 +498,7 @@ fun LoginMenuDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth()
@@ -748,7 +748,7 @@ fun MicrosoftLoginMethodDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.padding(all = 16.dp)
@@ -858,7 +858,7 @@ fun LocalLoginDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -1088,7 +1088,7 @@ fun OtherServerLoginDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -1290,7 +1290,7 @@ fun OtherAccountReloginDialog(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),

@@ -18,6 +18,9 @@
 
 package com.shoyoomc.aflecklauncher.ui.screens.content.settings
 
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.width
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
@@ -202,121 +205,25 @@ fun LauncherSettingsScreen(
                 }
             }
 
-            //启动器背景设置板块
-            LocalBackgroundViewModel.current?.let { backgroundViewModel ->
-                AnimatedItem { ctx ->
-                    SettingsCardColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animated(ctx)
-                    ) {
-                        SettingsCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            position = CardPosition.Top
-                        ) {
-                            CustomBackground(
-                                modifier = Modifier.fillMaxWidth(),
-                                backgroundViewModel = backgroundViewModel,
-                                submitError = submitError
-                            )
-                        }
-
-                        IntSliderSettingsCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            position = CardPosition.Middle,
-                            unit = AllSettings.launcherBackgroundOpacity,
-                            title = stringResource(R.string.settings_launcher_background_opacity_title),
-                            summary = stringResource(R.string.settings_launcher_background_opacity_summary),
-                            valueRange = AllSettings.launcherBackgroundOpacity.floatRange,
-                            suffix = "%",
-                            enabled = backgroundViewModel.isValid,
-                            fineTuningControl = true
-                        )
-
-                        IntSliderSettingsCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            position = CardPosition.Middle,
-                            unit = AllSettings.videoBackgroundVolume,
-                            title = stringResource(R.string.settings_launcher_background_video_volume_title),
-                            summary = stringResource(R.string.settings_launcher_background_video_volume_summary),
-                            valueRange = AllSettings.videoBackgroundVolume.floatRange,
-                            suffix = "%",
-                            enabled = backgroundViewModel.isValid && backgroundViewModel.isVideo,
-                            fineTuningControl = true
-                        )
-
-                        IntSliderSettingsCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            position = CardPosition.Bottom,
-                            unit = AllSettings.backgroundBlur,
-                            title = stringResource(R.string.settings_title_blur),
-                            summary = stringResource(R.string.settings_launcher_background_blur_summary),
-                            valueRange = AllSettings.backgroundBlur.floatRange,
-                            suffix = "Dp",
-                            enabled = backgroundViewModel.isValid,
-                            fineTuningControl = true,
-                            appendContent = {
-                                val unit = AllSettings.backgroundBlurType
-                                val state = unit.state
-                                IconButton(
-                                    modifier = Modifier
-                                        .padding(start = 12.dp)
-                                        .size(32.dp),
-                                    colors = IconButtonDefaults.iconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = DisabledAlpha),
-                                        disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = DisabledAlpha),
-                                    ),
-                                    onClick = {
-                                        unit.save(state.switch())
-                                    },
-                                    enabled = backgroundViewModel.isValid,
-                                ) {
-                                    Crossfade(
-                                        targetState = state
-                                    ) { target ->
-                                        val painter = when (target) {
-                                            BackgroundBlur.Background -> painterResource(R.drawable.ic_blur_circular_outlined)
-                                            BackgroundBlur.Foreground -> painterResource(R.drawable.ic_blur_circular_filled)
-                                        }
-                                        Icon(
-                                            painter = painter,
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-
-            //动画设置板块
+            //Wallpapers e animações do launcher (abre uma tela com as opções)
             AnimatedItem { ctx ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .animated(ctx)
                 ) {
-                    SwitchSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
+                    var wallpaperOpen by remember { mutableStateOf(false) }
+                    SettingsCard(
                         position = CardPosition.Top,
-                        unit = AllSettings.launcherSwapAnimEnabled,
-                        title = stringResource(R.string.settings_launcher_swap_anim_enabled_title),
-                        summary = stringResource(R.string.settings_launcher_swap_anim_enabled_summary)
-                    )
-
-                    IntSliderSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Bottom,
-                        unit = AllSettings.launcherAnimateSpeedLevel,
-                        title = stringResource(R.string.settings_launcher_animate_speed_title),
-                        summary = stringResource(R.string.settings_launcher_animate_speed_summary),
-                        valueRange = AllSettings.launcherAnimateSpeedLevel.floatRange,
-                        valueText = { value -> "×" + (value / 10f) },
-                        enabled = AllSettings.launcherSwapAnimEnabled.state,
+                        title = "Wallpapers e Animações do Launcher",
+                        summary = "Wallpaper · Brilho · Animações de transição",
+                        onClick = { wallpaperOpen = true },
+                        trailingIcon = { Text("›", style = MaterialTheme.typography.titleLarge) }
                     )
+                    if (wallpaperOpen) {
+                        AfWallpaperAnimDialog(submitError = submitError, onClose = { wallpaperOpen = false })
+                    }
                 }
             }
 
@@ -485,7 +392,7 @@ private fun CustomThemeDialog(
                     .padding(all = 16.dp)
                     .heightIn(max = (maxHeight - 32.dp).coerceAtMost(rememberDialogMaxHeight()))
                     .wrapContentHeight(),
-                shadowElevation = 3.dp,
+                shadowElevation = 0.dp,
                 color = cardColor(false),
                 contentColor = onCardColor(),
                 shape = MaterialTheme.shapes.extraLarge
@@ -778,6 +685,170 @@ private fun BackgroundOperation(
             LaunchedEffect(Unit) {
                 backgroundViewModel.delete()
                 changeOperation(BackgroundOperation.None)
+            }
+        }
+    }
+}
+
+/** Tela com as opções de plano de fundo e de animação do launcher. */
+@Composable
+private fun AfWallpaperAnimDialog(
+    submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
+    onClose: () -> Unit
+) {
+    val shape = com.shoyoomc.aflecklauncher.ui.screens.main.AfCutShape(18.dp)
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .fillMaxHeight(0.92f)
+                .afHud(shape)
+                .clip(shape)
+                .background(com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.92f))
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Wallpapers e Animações do Launcher", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Wallpaper, brilho e animações de transição",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                com.shoyoomc.aflecklauncher.ui.screens.main.AfOutlineButton(
+                    text = "Fechar",
+                    modifier = Modifier.width(120.dp),
+                    onClick = onClose
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScrollWithBar(state = rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+            //启动器背景设置板块
+            LocalBackgroundViewModel.current?.let { backgroundViewModel ->
+                run {
+                    SettingsCardColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        SettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Top
+                        ) {
+                            CustomBackground(
+                                modifier = Modifier.fillMaxWidth(),
+                                backgroundViewModel = backgroundViewModel,
+                                submitError = submitError
+                            )
+                        }
+
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.launcherBackgroundOpacity,
+                            title = stringResource(R.string.settings_launcher_background_opacity_title),
+                            summary = stringResource(R.string.settings_launcher_background_opacity_summary),
+                            valueRange = AllSettings.launcherBackgroundOpacity.floatRange,
+                            suffix = "%",
+                            enabled = backgroundViewModel.isValid,
+                            fineTuningControl = true
+                        )
+
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.videoBackgroundVolume,
+                            title = stringResource(R.string.settings_launcher_background_video_volume_title),
+                            summary = stringResource(R.string.settings_launcher_background_video_volume_summary),
+                            valueRange = AllSettings.videoBackgroundVolume.floatRange,
+                            suffix = "%",
+                            enabled = backgroundViewModel.isValid && backgroundViewModel.isVideo,
+                            fineTuningControl = true
+                        )
+
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Bottom,
+                            unit = AllSettings.backgroundBlur,
+                            title = stringResource(R.string.settings_title_blur),
+                            summary = stringResource(R.string.settings_launcher_background_blur_summary),
+                            valueRange = AllSettings.backgroundBlur.floatRange,
+                            suffix = "Dp",
+                            enabled = backgroundViewModel.isValid,
+                            fineTuningControl = true,
+                            appendContent = {
+                                val unit = AllSettings.backgroundBlurType
+                                val state = unit.state
+                                IconButton(
+                                    modifier = Modifier
+                                        .padding(start = 12.dp)
+                                        .size(32.dp),
+                                    colors = IconButtonDefaults.iconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = DisabledAlpha),
+                                        disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = DisabledAlpha),
+                                    ),
+                                    onClick = {
+                                        unit.save(state.switch())
+                                    },
+                                    enabled = backgroundViewModel.isValid,
+                                ) {
+                                    Crossfade(
+                                        targetState = state
+                                    ) { target ->
+                                        val painter = when (target) {
+                                            BackgroundBlur.Background -> painterResource(R.drawable.ic_blur_circular_outlined)
+                                            BackgroundBlur.Foreground -> painterResource(R.drawable.ic_blur_circular_filled)
+                                        }
+                                        Icon(
+                                            painter = painter,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            //动画设置板块
+            run {
+                SettingsCardColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    SwitchSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Top,
+                        unit = AllSettings.launcherSwapAnimEnabled,
+                        title = stringResource(R.string.settings_launcher_swap_anim_enabled_title),
+                        summary = stringResource(R.string.settings_launcher_swap_anim_enabled_summary)
+                    )
+
+                    IntSliderSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Bottom,
+                        unit = AllSettings.launcherAnimateSpeedLevel,
+                        title = stringResource(R.string.settings_launcher_animate_speed_title),
+                        summary = stringResource(R.string.settings_launcher_animate_speed_summary),
+                        valueRange = AllSettings.launcherAnimateSpeedLevel.floatRange,
+                        valueText = { value -> "×" + (value / 10f) },
+                        enabled = AllSettings.launcherSwapAnimEnabled.state,
+                    )
+                }
+            }
+
             }
         }
     }

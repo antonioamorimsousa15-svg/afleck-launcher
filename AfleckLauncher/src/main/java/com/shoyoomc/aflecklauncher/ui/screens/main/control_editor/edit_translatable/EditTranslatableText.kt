@@ -118,7 +118,7 @@ fun EditTranslatableTextDialog(
         ) {
             Surface(
                 modifier = Modifier.padding(all = 3.dp),
-            shadowElevation = 3.dp,
+            shadowElevation = 0.dp,
             color = cardColor(false),
             contentColor = onCardColor(),
             shape = MaterialTheme.shapes.extraLarge

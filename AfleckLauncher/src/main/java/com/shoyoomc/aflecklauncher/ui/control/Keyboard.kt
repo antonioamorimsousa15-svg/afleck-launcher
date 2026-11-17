@@ -476,7 +476,7 @@ private fun KeyboardNavDialog(
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(0.75f),
-            shadowElevation = 3.dp,
+            shadowElevation = 0.dp,
             shape = MaterialTheme.shapes.extraLarge,
             color = cardColor(false),
             contentColor = onCardColor(),

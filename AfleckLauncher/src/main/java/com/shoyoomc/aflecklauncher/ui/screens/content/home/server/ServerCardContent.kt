@@ -970,7 +970,7 @@ private fun CardDialogFrame(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
-                shadowElevation = 6.dp
+                shadowElevation = 0.dp,
             ) {
                 content()
             }

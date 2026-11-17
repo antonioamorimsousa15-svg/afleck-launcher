@@ -730,7 +730,7 @@ private fun TaskMenu(
                 containerColor = backgroundColor(),
                 contentColor = onBackgroundColor()
             ),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
         ) {
             Column {
                 CardTitleLayout(blur = 0) {

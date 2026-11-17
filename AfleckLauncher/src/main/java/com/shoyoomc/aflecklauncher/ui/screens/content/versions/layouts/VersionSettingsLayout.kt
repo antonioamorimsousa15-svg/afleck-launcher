@@ -119,7 +119,7 @@ fun StatefulDropdownMenuFollowGlobal(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     shape = MaterialTheme.shapes.large,
-                    shadowElevation = 3.dp,
+                    shadowElevation = 0.dp,
                 ) {
                     val allEntries = SettingState.entries
                     repeat(allEntries.size) { index ->

@@ -163,7 +163,7 @@ fun EditButtonStyleDialog(
                                 width = Dimension.percent(0.8f)
                                 height = Dimension.fillToConstraints
                             },
-                        shadowElevation = 3.dp,
+                        shadowElevation = 0.dp,
                         color = cardColor(false),
                         contentColor = onCardColor(),
                         shape = MaterialTheme.shapes.extraLarge
@@ -302,7 +302,7 @@ private fun RendererBox(
         color = color,
         contentColor = contentColor,
         shape = shape,
-        shadowElevation = 6.dp
+        shadowElevation = 0.dp,
     ) {
         Column(
             modifier = Modifier.padding(22.dp),
