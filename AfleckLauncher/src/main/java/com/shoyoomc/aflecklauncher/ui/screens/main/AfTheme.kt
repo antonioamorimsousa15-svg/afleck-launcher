@@ -190,8 +190,22 @@ internal fun AfPanel(
 /** Retângulo arredondado só com borda (sem fundo, sem sombra). */
 internal fun Modifier.afRect(color: Color, selected: Boolean = false, radius: Dp = 14.dp): Modifier {
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(14.dp))
-    val fill = if (selected) AfAccent.copy(alpha = 0.28f) else AfThemeState.base.copy(alpha = (AfThemeState.panelOpacity / 100f).coerceIn(0.25f, 0.7f))
-    return this.clip(shape).background(fill, shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
+    // Vidro sólido com a cor do tema (não transparente): itens importantes ficam legíveis.
+    val fillBrush = if (selected)
+        Brush.horizontalGradient(listOf(AfAccent.copy(alpha = 0.88f), AfAccent2.copy(alpha = 0.88f)))
+    else
+        Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.72f), AfNavy.copy(alpha = 0.84f)))
+    return this.clip(shape).background(fillBrush, shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
+}
+
+/** Vidro bem escuro com a cor do tema (marca, menu lateral): fundo translúcido, mas denso, como no Cryo. */
+internal fun Modifier.afDarkGlass(color: Color, selected: Boolean = false, radius: Dp = 28.dp): Modifier {
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius)
+    val brush = if (selected)
+        Brush.horizontalGradient(listOf(AfAccent.copy(alpha = 0.92f), AfAccent2.copy(alpha = 0.92f)))
+    else
+        Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.80f), AfNavy.copy(alpha = 0.92f)))
+    return this.clip(shape).background(brush, shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
 }
 
 /** Botão principal: degradê ciano, texto escuro. */
@@ -302,7 +316,10 @@ internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier
     val a = (AfThemeState.panelOpacity / 100f).coerceIn(0f, 1f)
     val tint = lerp(Color.White, AfAccent, 0.2f)
     return this
-        .background(base.copy(alpha = a), shape)
+        .background(
+            Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.10f * a + 0.04f), base.copy(alpha = a), base.copy(alpha = (a + 0.08f).coerceAtMost(1f)))),
+            shape
+        )
         .drawWithContent {
             drawContent()
             val o = shape.createOutline(size, layoutDirection, this)

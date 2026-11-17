@@ -85,7 +85,7 @@ fun AfTopBar(
 @Composable
 private fun Pill(onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit) {
     Row(
-        modifier = Modifier.afRect(AfBorder, radius = 14.dp)
+        modifier = Modifier.afDarkGlass(AfBorder, radius = 24.dp)
             .then(if (onClick != null) Modifier.afClick(onClick) else Modifier)
             .padding(start = 5.dp, end = 16.dp, top = 5.dp, bottom = 5.dp),
         verticalAlignment = Alignment.CenterVertically,

@@ -46,7 +46,16 @@ fun AfSidebar(
     onAppearance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AfPanel(modifier = modifier.width(190.dp).fillMaxHeight(), radius = 30.dp, deep = true) {
+    val panelShape = androidx.compose.foundation.shape.RoundedCornerShape(30.dp)
+    Box(
+        modifier = modifier.width(190.dp).fillMaxHeight()
+            .clip(panelShape)
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.55f), AfNavy.copy(alpha = 0.78f))),
+                panelShape
+            )
+            .border(1.4.dp, AfBorder, panelShape)
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(8.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -65,7 +74,7 @@ private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> 
     val color = if (selected) AfAccent else AfBorder
     Row(
         modifier = Modifier.fillMaxWidth().height(56.dp)
-            .afRect(color, selected, 28.dp)
+            .afDarkGlass(color, selected, 28.dp)
             .afClick(onClick)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -75,11 +84,11 @@ private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> 
                 .clip(CircleShape).border(1.2.dp, color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(painterResource(icon), null, tint = if (selected) AfAccent else AfText, modifier = Modifier.size(21.dp))
+            Icon(painterResource(icon), null, tint = AfText, modifier = Modifier.size(21.dp))
         }
         Spacer(Modifier.width(12.dp))
         Text(
-            label, color = if (selected) AfAccent else AfText,
+            label, color = AfText,
             fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1
         )
     }
