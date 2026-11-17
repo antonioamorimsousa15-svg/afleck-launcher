@@ -87,7 +87,7 @@ object AfThemeState {
         private set
     var contrast by mutableIntStateOf(0)
         private set
-    var panelOpacity by mutableIntStateOf(15)
+    var panelOpacity by mutableIntStateOf(45)
         private set
     var animate by mutableStateOf(false)
         private set
@@ -103,7 +103,7 @@ object AfThemeState {
         themeId = p.getString("theme.id", "branca") ?: "branca"
         vibrance = p.getInt("theme.vibrance", 0)
         contrast = p.getInt("theme.contrast", 0)
-        panelOpacity = p.getInt("theme.panelOpacityClear", 15)
+        panelOpacity = p.getInt("theme.panelOpacityGlass", 45)
         animate = p.getBoolean("theme.animate", false)
         uiScale = p.getInt("theme.uiScale100", 100)
     }
@@ -114,14 +114,14 @@ object AfThemeState {
     fun changePanelOpacity(v: Int) { panelOpacity = v.coerceIn(0, 100); saveAll() }
     fun changeAnimate(v: Boolean) { animate = v; saveAll() }
     fun changeUiScale(v: Int) { uiScale = v.coerceIn(60, 110); saveAll() }
-    fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 15; animate = false; uiScale = 100; saveAll() }
+    fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 45; animate = false; uiScale = 100; saveAll() }
 
     private fun saveAll() {
         prefs?.edit()
             ?.putString("theme.id", themeId)
             ?.putInt("theme.vibrance", vibrance)
             ?.putInt("theme.contrast", contrast)
-            ?.putInt("theme.panelOpacityClear", panelOpacity)
+            ?.putInt("theme.panelOpacityGlass", panelOpacity)
             ?.putBoolean("theme.animate", animate)
             ?.putInt("theme.uiScale100", uiScale)
             ?.apply()
@@ -190,7 +190,8 @@ internal fun AfPanel(
 /** Retângulo arredondado só com borda (sem fundo, sem sombra). */
 internal fun Modifier.afRect(color: Color, selected: Boolean = false, radius: Dp = 14.dp): Modifier {
     val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(14.dp))
-    return this.clip(shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
+    val fill = if (selected) AfAccent.copy(alpha = 0.28f) else AfThemeState.base.copy(alpha = (AfThemeState.panelOpacity / 100f).coerceIn(0.25f, 0.7f))
+    return this.clip(shape).background(fill, shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
 }
 
 /** Botão principal: degradê ciano, texto escuro. */

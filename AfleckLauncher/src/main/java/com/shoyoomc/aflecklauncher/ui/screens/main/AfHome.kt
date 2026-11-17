@@ -70,7 +70,7 @@ fun AfHome(
     Box(Modifier.fillMaxSize()) {
         AfHomeContent(
             onPlay, onOpenVersions, onOpenAccounts, onOpenDownload, onOpenSettings, onOpenAppearance,
-            slot916, homeSlot, accSlot, versSlot, mcvSlot, quickSlot, onEdit = { dialog = it }
+            slot916, homeSlot, accSlot, versSlot, mcvSlot, quickSlot, editing = dialog, onEdit = { dialog = it.ifEmpty { null } }
         )
     }
     when (dialog) {
@@ -102,12 +102,14 @@ private fun AfHomeContent(
     versSlot: AfImageSlot,
     mcvSlot: AfImageSlot,
     quickSlot: AfImageSlot,
+    editing: String?,
     onEdit: (String) -> Unit,
 ) {
     val account by AccountsManager.currentAccountFlow.collectAsState()
     val current by VersionsManager.currentVersion.collectAsState()
     val allVersions by VersionsManager.versions.collectAsState()
     val userName = account?.username
+    val editShortcuts = editing == "shortcuts"
 
     val summary = current?.let { runCatching { it.getVersionSummary() }.getOrDefault("") } ?: ""
     val loaderName = summary.substringAfter(", ", "").substringBefore(" -").trim()
@@ -295,15 +297,24 @@ private fun AfHomeContent(
                         Icon(painterResource(R.drawable.ic_settings_filled), null, tint = AfText, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
                         Text("Configurações Rápidas", color = AfText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, modifier = Modifier.weight(1f))
-                        Box(Modifier.afClick { onEdit("quick") }) { AfIconCircle(R.drawable.ic_edit_outlined, size = 34.dp) }
+                        Box(Modifier.afClick { onEdit("shortcuts") }) { AfIconCircle(R.drawable.ic_edit_outlined, size = 34.dp) }
                     }
-                    Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        QuickTile(Modifier.weight(1f), R.drawable.ic_video_settings, "Gráficos", onOpenSettings)
-                        QuickTile(Modifier.weight(1f), R.drawable.ic_dashboard_filled, "Layouts de HUD", onOpenSettings)
+                    val ctx = androidx.compose.ui.platform.LocalContext.current
+                    val picked = remember { mutableStateOf(afLoadShortcuts(ctx)) }
+                    val actions = mapOf(
+                        "graficos" to onOpenSettings, "hud" to onOpenSettings, "aparencia" to onOpenAppearance,
+                        "contas" to onOpenAccounts, "versoes" to onOpenVersions, "download" to onOpenDownload,
+                        "texturas" to onOpenVersions, "shaders" to onOpenVersions, "config" to onOpenSettings
+                    )
+                    val cols = if (picked.value.size > 4) 3 else 2
+                    picked.value.mapNotNull { id -> AF_SHORTCUTS.firstOrNull { it.id == id } }.chunked(cols).forEach { rowItems ->
+                        Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            rowItems.forEach { sc -> QuickTile(Modifier.weight(1f), sc.icon, sc.label, actions[sc.id] ?: onOpenSettings) }
+                            repeat(cols - rowItems.size) { Spacer(Modifier.weight(1f)) }
+                        }
                     }
-                    Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        QuickTile(Modifier.weight(1f), R.drawable.ic_package_2_outlined, "Aparência", onOpenAppearance)
-                        QuickTile(Modifier.weight(1f), R.drawable.ic_person_filled, "Contas", onOpenAccounts)
+                    if (editShortcuts) {
+                        AfShortcutsDialog(picked.value, onSave = { picked.value = it; afSaveShortcuts(ctx, it) }) { onEdit("") }
                     }
                 }
             }

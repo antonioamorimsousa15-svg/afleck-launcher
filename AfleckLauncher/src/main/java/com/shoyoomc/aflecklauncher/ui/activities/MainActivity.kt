@@ -350,7 +350,7 @@ class MainActivity : BaseAppCompatActivity() {
 
                     androidx.compose.runtime.CompositionLocalProvider(
                         androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(
-                            density = androidx.compose.ui.platform.LocalDensity.current.density * 0.8f,
+                            density = androidx.compose.ui.platform.LocalDensity.current.density * (com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.uiScale / 100f) * 0.8f,
                             fontScale = androidx.compose.ui.platform.LocalDensity.current.fontScale
                         )
                     ) {
