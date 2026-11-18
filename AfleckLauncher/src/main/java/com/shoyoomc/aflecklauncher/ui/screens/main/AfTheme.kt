@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.geometry.Size
@@ -93,6 +94,16 @@ object AfThemeState {
         private set
     var uiScale by mutableIntStateOf(100)
         private set
+    var glowOn by mutableStateOf(false)
+        private set
+    var glowLevel by mutableIntStateOf(5)
+        private set
+    var glowStrength by mutableIntStateOf(70)
+        private set
+    var neonAnimated by mutableStateOf(false)
+        private set
+    var neonThickness by mutableIntStateOf(3)
+        private set
 
     private var prefs: SharedPreferences? = null
 
@@ -106,6 +117,11 @@ object AfThemeState {
         panelOpacity = p.getInt("theme.panelOpacityGlass", 45)
         animate = p.getBoolean("theme.animate", false)
         uiScale = p.getInt("theme.uiScale100", 100)
+        glowOn = p.getBoolean("theme.glowOn", false)
+        glowLevel = p.getInt("theme.glowLevel", 5)
+        glowStrength = p.getInt("theme.glowStrength", 70)
+        neonAnimated = p.getBoolean("theme.neonAnimated", false)
+        neonThickness = p.getInt("theme.neonThickness", 3)
     }
 
     fun chooseTheme(id: String) { themeId = id; saveAll() }
@@ -113,6 +129,11 @@ object AfThemeState {
     fun changeContrast(v: Int) { contrast = v.coerceIn(-100, 100); saveAll() }
     fun changePanelOpacity(v: Int) { panelOpacity = v.coerceIn(0, 100); saveAll() }
     fun changeAnimate(v: Boolean) { animate = v; saveAll() }
+    fun changeGlowOn(v: Boolean) { glowOn = v; saveAll() }
+    fun changeGlowLevel(v: Int) { glowLevel = v.coerceIn(1, 10); saveAll() }
+    fun changeGlowStrength(v: Int) { glowStrength = v.coerceIn(5, 100); saveAll() }
+    fun changeNeonAnimated(v: Boolean) { neonAnimated = v; saveAll() }
+    fun changeNeonThickness(v: Int) { neonThickness = v.coerceIn(1, 10); saveAll() }
     fun changeUiScale(v: Int) { uiScale = v.coerceIn(60, 110); saveAll() }
     fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 45; animate = false; uiScale = 100; saveAll() }
 
@@ -124,6 +145,11 @@ object AfThemeState {
             ?.putInt("theme.panelOpacityGlass", panelOpacity)
             ?.putBoolean("theme.animate", animate)
             ?.putInt("theme.uiScale100", uiScale)
+            ?.putBoolean("theme.glowOn", glowOn)
+            ?.putInt("theme.glowLevel", glowLevel)
+            ?.putInt("theme.glowStrength", glowStrength)
+            ?.putBoolean("theme.neonAnimated", neonAnimated)
+            ?.putInt("theme.neonThickness", neonThickness)
             ?.apply()
     }
 
@@ -176,7 +202,7 @@ internal fun AfPanel(
     deep: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(28.dp))
+    val shape = AfCutShape(radius.coerceIn(12.dp, 24.dp))
     Box(
         modifier = modifier.afGlassSurface(shape),
         content = content
@@ -185,36 +211,90 @@ internal fun AfPanel(
 
 
 /** Vidro: fundo translúcido, brilho nas bordas e um reflexo fino no topo. */
-internal fun Modifier.afGlassSurface(shape: androidx.compose.ui.graphics.Shape, selected: Boolean = false): Modifier {
+internal fun Modifier.afGlassSurface(shape: androidx.compose.ui.graphics.Shape, selected: Boolean = false): Modifier = composed {
+    val neon = AfThemeState.glowOn && AfThemeState.neonAnimated
+    val pulse = if (neon) rememberInfiniteTransition(label = "afneon").animateFloat(
+        initialValue = 0.45f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(1500, easing = LinearEasing), androidx.compose.animation.core.RepeatMode.Reverse),
+        label = "afneonv"
+    ) else null
     val k = (AfThemeState.panelOpacity / 45f).coerceIn(0.3f, 1.8f)
-    val fill = if (selected)
-        Brush.horizontalGradient(listOf(AfAccent.copy(alpha = 0.55f), AfAccent2.copy(alpha = 0.55f)))
-    else
-        Brush.verticalGradient(
-            listOf(
-                Color.White.copy(alpha = (0.20f * k).coerceAtMost(0.6f)),
-                Color.White.copy(alpha = (0.06f * k).coerceAtMost(0.4f)),
-                AfThemeState.base.copy(alpha = (0.28f * k).coerceAtMost(0.8f))
+    val accent = AfAccent
+    val accent2 = AfAccent2
+    val base = AfThemeState.base
+    val fill = remember(selected, k, accent, accent2, base) {
+        if (selected)
+            Brush.horizontalGradient(listOf(accent.copy(alpha = 0.55f), accent2.copy(alpha = 0.55f)))
+        else
+            Brush.verticalGradient(
+                listOf(
+                    Color.White.copy(alpha = (0.20f * k).coerceAtMost(0.6f)),
+                    Color.White.copy(alpha = (0.06f * k).coerceAtMost(0.4f)),
+                    base.copy(alpha = (0.28f * k).coerceAtMost(0.8f))
+                )
             )
-        )
-    return this
+    }
+    val borderBrush = remember(accent) {
+        Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0.22f), accent.copy(alpha = 0.55f)))
+    }
+    val glintBrush = remember { Brush.horizontalGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.95f), Color.Transparent)) }
+    val glowOn = AfThemeState.glowOn
+    val glowLevel = AfThemeState.glowLevel.coerceAtMost(4)
+    val glowStr = AfThemeState.glowStrength / 100f
+    val glowTh = AfThemeState.neonThickness / 3f
+    this@composed
         .clip(shape)
         .background(fill, shape)
-        .drawWithContent {
-            drawContent()
+        .drawWithCache {
             val o = shape.createOutline(size, layoutDirection, this)
-            afOutline(
-                o,
-                Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0.22f), AfAccent.copy(alpha = 0.55f))),
-                style = androidx.compose.ui.graphics.drawscope.Stroke(1.2.dp.toPx())
-            )
+            val borderStroke = androidx.compose.ui.graphics.drawscope.Stroke(1.2.dp.toPx())
             val y = 1.dp.toPx()
-            drawLine(
-                Brush.horizontalGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.95f), Color.Transparent)),
-                androidx.compose.ui.geometry.Offset(size.width * 0.18f, y),
-                androidx.compose.ui.geometry.Offset(size.width * 0.82f, y),
-                strokeWidth = 1.6.dp.toPx()
-            )
+            val p1 = androidx.compose.ui.geometry.Offset(size.width * 0.18f, y)
+            val p2 = androidx.compose.ui.geometry.Offset(size.width * 0.82f, y)
+            val glintW = 1.6.dp.toPx()
+            val frame = shape is AfCutShape && shape.cut >= 16.dp && size.minDimension > 70.dp.toPx()
+            val c = if (frame) (shape as AfCutShape).cut.toPx().coerceAtMost(size.minDimension / 3f) else 0f
+            val sc = c * 0.4f
+            val inset = 7.dp.toPx()
+            val len = 16.dp.toPx()
+            val bw = 1.8.dp.toPx()
+            val node = 3.dp.toPx()
+            val nodeS = androidx.compose.ui.graphics.drawscope.Stroke(1.2.dp.toPx())
+            val barA = androidx.compose.ui.geometry.Offset(size.width * 0.35f, size.height - 1.5.dp.toPx())
+            val barB = androidx.compose.ui.geometry.Offset(size.width * 0.65f, size.height - 1.5.dp.toPx())
+            val barBrush = Brush.horizontalGradient(listOf(Color.Transparent, accent2.copy(alpha = 0.9f), Color.Transparent))
+            val bracket = Path().apply {
+                // canto superior esquerdo
+                moveTo(inset + c * 0.35f, inset + len); lineTo(inset + c * 0.35f, inset + c * 0.35f)
+                // (usa o chanfro: sobe e segue pela diagonal até o topo)
+                lineTo(inset + c * 0.35f + len, inset + c * 0.35f)
+                // canto inferior direito
+                moveTo(size.width - inset - c * 0.35f, size.height - inset - len)
+                lineTo(size.width - inset - c * 0.35f, size.height - inset - c * 0.35f)
+                lineTo(size.width - inset - c * 0.35f - len, size.height - inset - c * 0.35f)
+            }
+            onDrawWithContent {
+                drawContent()
+                afOutline(o, borderBrush, style = borderStroke)
+                drawLine(glintBrush, p1, p2, strokeWidth = glintW)
+                if (frame) {
+                    drawPath(bracket, accent2.copy(alpha = 0.95f), style = androidx.compose.ui.graphics.drawscope.Stroke(bw, cap = androidx.compose.ui.graphics.StrokeCap.Square))
+                    drawLine(barBrush, barA, barB, strokeWidth = 2.dp.toPx())
+                    drawCircle(accent, node, Offset(size.width - inset - sc, inset + sc), style = nodeS)
+                    drawCircle(accent, node, Offset(inset + sc, size.height - inset - sc), style = nodeS)
+                }
+                if (glowOn) {
+                    val pv = pulse?.value ?: 1f
+                    for (i in 1..glowLevel) {
+                        val al = (0.34f * glowStr * pv / i).coerceIn(0f, 1f)
+                        afOutline(
+                            o,
+                            Brush.verticalGradient(listOf(accent.copy(alpha = al), accent2.copy(alpha = al))),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke((i * 1.5f * glowTh).dp.toPx())
+                        )
+                    }
+                }
+            }
         }
 }
 
@@ -319,11 +399,24 @@ internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: C
         )
     }
 
-/** Moldura arredondada (estilo Cryo). Mantém o nome AfCutShape para valer em todas as telas. */
-class AfCutShape(private val cut: Dp = 14.dp) : Shape {
+/** Molde HUD neon: cantos recortados (chanfro grande em cima-esquerda e embaixo-direita, pequeno nos outros). */
+class AfCutShape(val cut: Dp = 14.dp) : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val r = with(density) { (cut * 0.9f).coerceAtMost(14.dp).toPx() }.coerceAtMost(minOf(size.width, size.height) / 2f)
-        return Outline.Rounded(androidx.compose.ui.geometry.RoundRect(0f, 0f, size.width, size.height, androidx.compose.ui.geometry.CornerRadius(r, r)))
+        val c = with(density) { cut.toPx() }.coerceAtMost(minOf(size.width, size.height) / 3f)
+        val s = c * 0.4f
+        val w = size.width
+        val h = size.height
+        val p = Path()
+        p.moveTo(c, 0f)
+        p.lineTo(w - s, 0f)
+        p.lineTo(w, s)
+        p.lineTo(w, h - c)
+        p.lineTo(w - c, h)
+        p.lineTo(s, h)
+        p.lineTo(0f, h - s)
+        p.lineTo(0f, c)
+        p.close()
+        return Outline.Generic(p)
     }
 }
 
