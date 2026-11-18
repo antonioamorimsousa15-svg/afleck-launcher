@@ -178,35 +178,53 @@ internal fun AfPanel(
 ) {
     val shape = AfCutShape((radius.value * 0.55f).dp)
     Box(
-        modifier = modifier
-            .afGlow(shape, AfBorder, if (deep) 1f else 0.8f)
-            .clip(shape)
-            .background(if (deep) AfPanelDeep else AfPanel),
+        modifier = modifier.afGlassSurface(shape),
         content = content
     )
 }
 
 
-/** Retângulo arredondado só com borda (sem fundo, sem sombra). */
-internal fun Modifier.afRect(color: Color, selected: Boolean = false, radius: Dp = 14.dp): Modifier {
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(14.dp))
-    // Vidro sólido com a cor do tema (não transparente): itens importantes ficam legíveis.
-    val fillBrush = if (selected)
-        Brush.horizontalGradient(listOf(AfAccent.copy(alpha = 0.88f), AfAccent2.copy(alpha = 0.88f)))
+/** Vidro: fundo translúcido, brilho nas bordas e um reflexo fino no topo. */
+internal fun Modifier.afGlassSurface(shape: androidx.compose.ui.graphics.Shape, selected: Boolean = false): Modifier {
+    val k = (AfThemeState.panelOpacity / 45f).coerceIn(0.3f, 1.8f)
+    val fill = if (selected)
+        Brush.horizontalGradient(listOf(AfAccent.copy(alpha = 0.55f), AfAccent2.copy(alpha = 0.55f)))
     else
-        Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.72f), AfNavy.copy(alpha = 0.84f)))
-    return this.clip(shape).background(fillBrush, shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
+        Brush.verticalGradient(
+            listOf(
+                Color.White.copy(alpha = (0.20f * k).coerceAtMost(0.6f)),
+                Color.White.copy(alpha = (0.06f * k).coerceAtMost(0.4f)),
+                AfThemeState.base.copy(alpha = (0.28f * k).coerceAtMost(0.8f))
+            )
+        )
+    return this
+        .clip(shape)
+        .background(fill, shape)
+        .drawWithContent {
+            drawContent()
+            val o = shape.createOutline(size, layoutDirection, this)
+            afOutline(
+                o,
+                Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0.22f), AfAccent.copy(alpha = 0.55f))),
+                style = androidx.compose.ui.graphics.drawscope.Stroke(1.2.dp.toPx())
+            )
+            val y = 1.dp.toPx()
+            drawLine(
+                Brush.horizontalGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.95f), Color.Transparent)),
+                androidx.compose.ui.geometry.Offset(size.width * 0.18f, y),
+                androidx.compose.ui.geometry.Offset(size.width * 0.82f, y),
+                strokeWidth = 1.6.dp.toPx()
+            )
+        }
 }
 
+/** Retângulo arredondado só com borda (sem fundo, sem sombra). */
+internal fun Modifier.afRect(color: Color, selected: Boolean = false, radius: Dp = 14.dp): Modifier =
+    this.afGlassSurface(androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(28.dp)), selected)
+
 /** Vidro bem escuro com a cor do tema (marca, menu lateral): fundo translúcido, mas denso, como no Cryo. */
-internal fun Modifier.afDarkGlass(color: Color, selected: Boolean = false, radius: Dp = 28.dp): Modifier {
-    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius)
-    val brush = if (selected)
-        Brush.horizontalGradient(listOf(AfAccent.copy(alpha = 0.92f), AfAccent2.copy(alpha = 0.92f)))
-    else
-        Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.80f), AfNavy.copy(alpha = 0.92f)))
-    return this.clip(shape).background(brush, shape).border(if (selected) 1.8.dp else 1.2.dp, if (selected) AfAccent else color, shape)
-}
+internal fun Modifier.afDarkGlass(color: Color, selected: Boolean = false, radius: Dp = 28.dp): Modifier =
+    this.afGlassSurface(androidx.compose.foundation.shape.RoundedCornerShape(radius), selected)
 
 /** Botão principal: degradê ciano, texto escuro. */
 @Composable
@@ -311,22 +329,4 @@ class AfCutShape(private val cut: Dp = 14.dp) : Shape {
 
 /** Vidro grande (cartões e painéis): degradê escuro na diagonal, luz nas bordas, borda branca fina. */
 @Composable
-internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier {
-    val base = AfThemeState.base
-    val a = (AfThemeState.panelOpacity / 100f).coerceIn(0f, 1f)
-    val tint = lerp(Color.White, AfAccent, 0.2f)
-    return this
-        .background(
-            Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.10f * a + 0.04f), base.copy(alpha = a), base.copy(alpha = (a + 0.08f).coerceAtMost(1f)))),
-            shape
-        )
-        .drawWithContent {
-            drawContent()
-            val o = shape.createOutline(size, layoutDirection, this)
-            afOutline(
-                o,
-                Brush.verticalGradient(listOf(tint.copy(alpha = 0.95f), tint.copy(alpha = 0.55f))),
-                style = androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx())
-            )
-        }
-}
+internal fun Modifier.afHud(shape: androidx.compose.ui.graphics.Shape): Modifier = this.afGlassSurface(shape)
