@@ -176,7 +176,7 @@ internal fun AfPanel(
     deep: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val shape = AfCutShape((radius.value * 0.55f).dp)
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(28.dp))
     Box(
         modifier = modifier.afGlassSurface(shape),
         content = content
