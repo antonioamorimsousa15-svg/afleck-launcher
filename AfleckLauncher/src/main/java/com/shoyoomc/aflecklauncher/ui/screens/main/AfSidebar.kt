@@ -46,7 +46,7 @@ fun AfSidebar(
     onAppearance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val panelShape = AfCutShape(26.dp)
+    val panelShape = androidx.compose.foundation.shape.RoundedCornerShape(30.dp)
     Box(
         modifier = modifier.width(205.dp).fillMaxHeight()
             .clip(panelShape)
@@ -54,12 +54,11 @@ fun AfSidebar(
                 androidx.compose.ui.graphics.Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.55f), AfNavy.copy(alpha = 0.78f))),
                 panelShape
             )
-            .afGlassSurface(panelShape)
+            .border(1.4.dp, AfBorder, panelShape)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(10.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(7.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.spacedBy(7.dp)
         ) {
             NavPill(R.drawable.ic_home_filled, "Início", inHome, onHome)
             NavPill(R.drawable.ic_sports_esports_outlined, "Versões", inVersions, onVersions)
@@ -78,7 +77,6 @@ private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> 
             .afDarkGlass(color, selected, 28.dp)
             .afClick(onClick)
             .padding(horizontal = 6.dp),
-        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -88,7 +86,7 @@ private fun NavPill(icon: Int, label: String, selected: Boolean, onClick: () -> 
         ) {
             Icon(painterResource(icon), null, tint = AfText, modifier = Modifier.size(22.dp))
         }
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.width(12.dp))
         Text(
             label, color = AfText,
             fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1

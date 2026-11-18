@@ -73,11 +73,8 @@ fun Modifier.backgroundGlass(
     color: Color,
     enabled: Boolean = true,
 ): Modifier {
-    if (AllSettings.backgroundBlurType.state == BackgroundBlur.Background) return this
-    if (!enabled) return this
-    val background = LocalBackgroundViewModel.current?.takeIf { it.isValid } ?: return this
-    if (blur <= 0 || AllSettings.launcherBackgroundOpacity.state >= 100) return this
-    return this then GlassElement(blur, color, background)
+    // Afleck: a camada de desfoque do ZL2 foi removida; o vidro agora é o do launcher (afGlassSurface).
+    return this
 }
 
 /**

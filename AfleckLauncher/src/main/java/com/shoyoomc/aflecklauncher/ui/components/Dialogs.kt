@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.shoyoomc.aflecklauncher.R
+import com.shoyoomc.aflecklauncher.ui.screens.main.afHud
 import com.shoyoomc.aflecklauncher.ui.theme.cardColor
 import com.shoyoomc.aflecklauncher.ui.theme.onCardColor
 import kotlinx.coroutines.Dispatchers
@@ -106,6 +107,8 @@ fun SimpleAlertDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
+        modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
         onDismissRequest = {
             if (dismissByDialog) onDismiss()
         },
@@ -155,6 +158,8 @@ fun SimpleAlertDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
+        modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
         onDismissRequest = {
             if (dismissByDialog) onDismiss()
         },
@@ -193,6 +198,8 @@ fun SimpleAlertDialog(
     onDismissRequest: () -> Unit = {}
 ) {
     AlertDialog(
+        modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
         onDismissRequest = onDismissRequest,
         title = {
             Text(
@@ -238,6 +245,8 @@ fun SimpleAlertDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
+        modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -294,7 +303,8 @@ fun SimpleEditDialog(
                 modifier = Modifier
                     .padding(all = 6.dp)
                     .heightIn(max = (maxHeight - 12.dp).coerceAtMost(rememberDialogMaxHeight()))
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .afHud(MaterialTheme.shapes.extraLarge),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
@@ -371,7 +381,8 @@ fun SimpleEditDialog(
                 modifier = Modifier
                     .padding(all = 6.dp)
                     .heightIn(max = (maxHeight - 12.dp).coerceAtMost(rememberDialogMaxHeight()))
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .afHud(MaterialTheme.shapes.extraLarge),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
@@ -565,7 +576,8 @@ fun <T> SimpleListDialog(
                 modifier = Modifier
                     .padding(all = 3.dp)
                     .heightIn(max = (maxHeight - 6.dp).coerceAtMost(rememberDialogMaxHeight()))
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .afHud(MaterialTheme.shapes.extraLarge),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = cardColor(false),
                 contentColor = onCardColor(),
@@ -664,6 +676,7 @@ fun ProgressDialog(
 ) {
     Dialog(onDismissRequest = {}) {
         Surface(
+            modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
             shape = MaterialTheme.shapes.extraLarge,
             color = cardColor(false),
             contentColor = onCardColor(),

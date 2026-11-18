@@ -272,6 +272,35 @@ fun GameSettingsScreen(
                     )
                 }
             }
+
+            AnimatedItem { ctx ->
+                SettingsCardColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animated(ctx)
+                ) {
+                    SwitchSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Top,
+                        checked = com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickOn,
+                        onCheckedChange = { com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.changeDblClickOn(it) },
+                        title = "Duplo clique ao segurar",
+                        summary = "Cada toque no bot\u00e3o de bater ou de colocar bloco d\u00e1 dois cliques seguidos (ajuda no mobile)"
+                    )
+
+                    IntSliderSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Bottom,
+                        value = com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickRate,
+                        onValueChange = { com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.changeDblClickRate(it) },
+                        title = "Intervalo entre os dois cliques",
+                        summary = "Tempo entre o primeiro e o segundo clique",
+                        valueRange = 20f..200f,
+                        suffix = "ms",
+                        enabled = com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickOn
+                    )
+                }
+            }
         }
     }
 }

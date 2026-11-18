@@ -32,7 +32,14 @@ fun lwjglEvent(
     val keycode: Int = ControlEventKeycode.getKeycodeFromEvent(eventKey)?.toInt() ?: return
 
     if (isMouse) {
-        CallbackBridge.sendMouseButton(keycode, isPressed)
+        val repeatable = keycode == com.movtery.inputmap.keycodes.LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt() ||
+            keycode == com.movtery.inputmap.keycodes.LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT.toInt()
+        if (repeatable && com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickOn) {
+            AfDoubleClicker.handle(keycode, isPressed)
+        } else {
+            AfDoubleClicker.stop(keycode)
+            CallbackBridge.sendMouseButton(keycode, isPressed)
+        }
     } else {
         CallbackBridge.sendKeyPress(keycode, CallbackBridge.getCurrentMods(), isPressed)
         CallbackBridge.setModifiers(keycode, isPressed)
@@ -97,5 +104,46 @@ fun launcherEvent(
                 }
             }
         }
+    }
+}
+
+/**
+ * Duplo clique: a cada toque no botão (bater / colocar bloco) o launcher dá dois cliques,
+ * separados pelo intervalo escolhido (ms). O segundo clique fica apertado enquanto o dedo segurar.
+ */
+object AfDoubleClicker {
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val pending = HashMap<Int, MutableList<Runnable>>()
+
+    private fun later(keycode: Int, delay: Long, block: () -> Unit) {
+        val r = Runnable { block() }
+        pending.getOrPut(keycode) { mutableListOf() }.add(r)
+        handler.postDelayed(r, delay)
+    }
+
+    fun handle(keycode: Int, pressed: Boolean) {
+        if (!pressed) {
+            val wasWaiting = pending[keycode]?.isNotEmpty() == true
+            stop(keycode)
+            // se soltou antes do segundo clique, ele ainda acontece rápido e é solto logo depois
+            CallbackBridge.sendMouseButton(keycode, false)
+            if (wasWaiting) {
+                CallbackBridge.sendMouseButton(keycode, true)
+                CallbackBridge.sendMouseButton(keycode, false)
+            }
+            return
+        }
+        stop(keycode)
+        val gap = com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickRate.coerceIn(20, 200).toLong()
+        CallbackBridge.sendMouseButton(keycode, true)
+        later(keycode, (gap / 3).coerceAtLeast(10L)) { CallbackBridge.sendMouseButton(keycode, false) }
+        later(keycode, gap) {
+            pending[keycode]?.clear()
+            CallbackBridge.sendMouseButton(keycode, true)
+        }
+    }
+
+    fun stop(keycode: Int) {
+        pending.remove(keycode)?.forEach { handler.removeCallbacks(it) }
     }
 }

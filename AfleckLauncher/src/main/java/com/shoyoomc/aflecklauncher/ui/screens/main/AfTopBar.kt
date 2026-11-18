@@ -46,13 +46,13 @@ fun AfTopBar(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Pill(onClick = onLogo, modifier = Modifier.width(205.dp)) {
+        Pill(onClick = onLogo) {
             Box(
                 Modifier.size(54.dp).clip(CircleShape).border(1.5.dp, AfAccent, CircleShape),
                 contentAlignment = Alignment.Center
             ) { Icon(painterResource(R.drawable.ic_af_bolt), null, tint = AfAccent, modifier = Modifier.size(32.dp)) }
             Spacer(Modifier.width(10.dp))
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column {
                 Text("Afleck", color = AfText, fontSize = 28.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("LAUNCHER", color = AfDim, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1)
@@ -89,12 +89,11 @@ fun AfTopBar(
 }
 
 @Composable
-private fun Pill(onClick: (() -> Unit)? = null, modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
+private fun Pill(onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit) {
     Row(
-        modifier = modifier.afDarkGlass(AfBorder, radius = 24.dp)
+        modifier = Modifier.afDarkGlass(AfBorder, radius = 24.dp)
             .then(if (onClick != null) Modifier.afClick(onClick) else Modifier)
             .padding(start = 5.dp, end = 16.dp, top = 5.dp, bottom = 5.dp),
-        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
         content = content
     )

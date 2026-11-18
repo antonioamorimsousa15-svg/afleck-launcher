@@ -105,6 +105,11 @@ object AfThemeState {
     var neonThickness by mutableIntStateOf(3)
         private set
 
+    var dblClickOn by mutableStateOf(false)
+        private set
+    var dblClickRate by mutableIntStateOf(50)
+        private set
+
     private var prefs: SharedPreferences? = null
 
     fun load(ctx: Context) {
@@ -122,6 +127,8 @@ object AfThemeState {
         glowStrength = p.getInt("theme.glowStrength", 70)
         neonAnimated = p.getBoolean("theme.neonAnimated", false)
         neonThickness = p.getInt("theme.neonThickness", 3)
+        dblClickOn = p.getBoolean("game.dblClickOn", false)
+        dblClickRate = p.getInt("game.dblClickGap", 50)
     }
 
     fun chooseTheme(id: String) { themeId = id; saveAll() }
@@ -134,6 +141,8 @@ object AfThemeState {
     fun changeGlowStrength(v: Int) { glowStrength = v.coerceIn(5, 100); saveAll() }
     fun changeNeonAnimated(v: Boolean) { neonAnimated = v; saveAll() }
     fun changeNeonThickness(v: Int) { neonThickness = v.coerceIn(1, 10); saveAll() }
+    fun changeDblClickOn(v: Boolean) { dblClickOn = v; saveAll() }
+    fun changeDblClickRate(v: Int) { dblClickRate = v.coerceIn(20, 200); saveAll() }
     fun changeUiScale(v: Int) { uiScale = v.coerceIn(60, 110); saveAll() }
     fun resetAdjustments() { vibrance = 0; contrast = 0; panelOpacity = 45; animate = false; uiScale = 100; saveAll() }
 
@@ -150,6 +159,8 @@ object AfThemeState {
             ?.putInt("theme.glowStrength", glowStrength)
             ?.putBoolean("theme.neonAnimated", neonAnimated)
             ?.putInt("theme.neonThickness", neonThickness)
+            ?.putBoolean("game.dblClickOn", dblClickOn)
+            ?.putInt("game.dblClickGap", dblClickRate)
             ?.apply()
     }
 
@@ -202,7 +213,7 @@ internal fun AfPanel(
     deep: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val shape = AfCutShape(radius.coerceIn(12.dp, 24.dp))
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(radius.coerceAtMost(28.dp))
     Box(
         modifier = modifier.afGlassSurface(shape),
         content = content
@@ -252,37 +263,10 @@ internal fun Modifier.afGlassSurface(shape: androidx.compose.ui.graphics.Shape, 
             val p1 = androidx.compose.ui.geometry.Offset(size.width * 0.18f, y)
             val p2 = androidx.compose.ui.geometry.Offset(size.width * 0.82f, y)
             val glintW = 1.6.dp.toPx()
-            val frame = shape is AfCutShape && shape.cut >= 16.dp && size.minDimension > 70.dp.toPx()
-            val c = if (frame) (shape as AfCutShape).cut.toPx().coerceAtMost(size.minDimension / 3f) else 0f
-            val sc = c * 0.4f
-            val inset = 7.dp.toPx()
-            val len = 16.dp.toPx()
-            val bw = 1.8.dp.toPx()
-            val node = 3.dp.toPx()
-            val nodeS = androidx.compose.ui.graphics.drawscope.Stroke(1.2.dp.toPx())
-            val barA = androidx.compose.ui.geometry.Offset(size.width * 0.35f, size.height - 1.5.dp.toPx())
-            val barB = androidx.compose.ui.geometry.Offset(size.width * 0.65f, size.height - 1.5.dp.toPx())
-            val barBrush = Brush.horizontalGradient(listOf(Color.Transparent, accent2.copy(alpha = 0.9f), Color.Transparent))
-            val bracket = Path().apply {
-                // canto superior esquerdo
-                moveTo(inset + c * 0.35f, inset + len); lineTo(inset + c * 0.35f, inset + c * 0.35f)
-                // (usa o chanfro: sobe e segue pela diagonal até o topo)
-                lineTo(inset + c * 0.35f + len, inset + c * 0.35f)
-                // canto inferior direito
-                moveTo(size.width - inset - c * 0.35f, size.height - inset - len)
-                lineTo(size.width - inset - c * 0.35f, size.height - inset - c * 0.35f)
-                lineTo(size.width - inset - c * 0.35f - len, size.height - inset - c * 0.35f)
-            }
             onDrawWithContent {
                 drawContent()
                 afOutline(o, borderBrush, style = borderStroke)
                 drawLine(glintBrush, p1, p2, strokeWidth = glintW)
-                if (frame) {
-                    drawPath(bracket, accent2.copy(alpha = 0.95f), style = androidx.compose.ui.graphics.drawscope.Stroke(bw, cap = androidx.compose.ui.graphics.StrokeCap.Square))
-                    drawLine(barBrush, barA, barB, strokeWidth = 2.dp.toPx())
-                    drawCircle(accent, node, Offset(size.width - inset - sc, inset + sc), style = nodeS)
-                    drawCircle(accent, node, Offset(inset + sc, size.height - inset - sc), style = nodeS)
-                }
                 if (glowOn) {
                     val pv = pulse?.value ?: 1f
                     for (i in 1..glowLevel) {
@@ -399,24 +383,11 @@ internal fun Modifier.afGlow(shape: androidx.compose.ui.graphics.Shape, color: C
         )
     }
 
-/** Molde HUD neon: cantos recortados (chanfro grande em cima-esquerda e embaixo-direita, pequeno nos outros). */
-class AfCutShape(val cut: Dp = 14.dp) : Shape {
+/** Moldura arredondada (estilo Cryo). Mantém o nome AfCutShape para valer em todas as telas. */
+class AfCutShape(private val cut: Dp = 14.dp) : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val c = with(density) { cut.toPx() }.coerceAtMost(minOf(size.width, size.height) / 3f)
-        val s = c * 0.4f
-        val w = size.width
-        val h = size.height
-        val p = Path()
-        p.moveTo(c, 0f)
-        p.lineTo(w - s, 0f)
-        p.lineTo(w, s)
-        p.lineTo(w, h - c)
-        p.lineTo(w - c, h)
-        p.lineTo(s, h)
-        p.lineTo(0f, h - s)
-        p.lineTo(0f, c)
-        p.close()
-        return Outline.Generic(p)
+        val r = with(density) { (cut * 0.9f).coerceAtMost(14.dp).toPx() }.coerceAtMost(minOf(size.width, size.height) / 2f)
+        return Outline.Rounded(androidx.compose.ui.geometry.RoundRect(0f, 0f, size.width, size.height, androidx.compose.ui.geometry.CornerRadius(r, r)))
     }
 }
 
