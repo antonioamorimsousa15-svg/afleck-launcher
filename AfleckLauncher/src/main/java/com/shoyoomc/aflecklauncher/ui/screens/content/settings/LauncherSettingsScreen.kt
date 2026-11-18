@@ -899,5 +899,6 @@ private fun AfGlowSliderRow(title: String, summary: String, value: Int, min: Int
     }
 }
 
+@androidx.compose.runtime.Composable
 private fun Modifier.afGlowRowBg(): Modifier =
     this.afHud(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
