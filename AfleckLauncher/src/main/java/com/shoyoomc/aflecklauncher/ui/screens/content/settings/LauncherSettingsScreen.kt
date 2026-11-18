@@ -822,6 +822,19 @@ private fun AfWallpaperAnimDialog(
                 }
             }
 
+            //Brilho (neon) — igual ao Cryo
+            run {
+                val T = com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("BRILHO", style = MaterialTheme.typography.labelLarge, color = com.shoyoomc.aflecklauncher.ui.screens.main.AfAccent)
+                    AfGlowSwitchRow("Brilho", "Adiciona um brilho neon nas bordas da interface e de cada botão.", T.glowOn) { T.changeGlowOn(it) }
+                    AfGlowSliderRow("Nível do brilho", "Define o tamanho do brilho ao redor das bordas.", T.glowLevel, 1, 10, "", T.glowOn) { T.changeGlowLevel(it) }
+                    AfGlowSliderRow("Intensidade do brilho", "Define o quão forte o brilho aparece.", T.glowStrength, 5, 100, "%", T.glowOn) { T.changeGlowStrength(it) }
+                    AfGlowSwitchRow("Brilho neon animado", "Bordas com neon animado na cor do tema em todo o Launcher", T.neonAnimated, T.glowOn) { T.changeNeonAnimated(it) }
+                    AfGlowSliderRow("Espessura do neon", "Define a espessura do neon nas bordas.", T.neonThickness, 1, 10, "", T.glowOn) { T.changeNeonThickness(it) }
+                }
+            }
+
             //动画设置板块
             run {
                 SettingsCardColumn(
@@ -853,3 +866,38 @@ private fun AfWallpaperAnimDialog(
         }
     }
 }
+
+@Composable
+private fun AfGlowSwitchRow(title: String, summary: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().afGlowRowBg().padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(summary, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+        }
+        androidx.compose.material3.Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
+    }
+}
+
+@Composable
+private fun AfGlowSliderRow(title: String, summary: String, value: Int, min: Int, max: Int, suffix: String, enabled: Boolean, onChange: (Int) -> Unit) {
+    Column(Modifier.fillMaxWidth().afGlowRowBg().padding(horizontal = 14.dp, vertical = 10.dp)) {
+        Text(title, style = MaterialTheme.typography.titleSmall)
+        Text(summary, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.material3.Slider(
+                value = value.toFloat(),
+                onValueChange = { onChange(it.toInt()) },
+                valueRange = min.toFloat()..max.toFloat(),
+                enabled = enabled,
+                modifier = Modifier.weight(1f)
+            )
+            Text("$value$suffix", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 12.dp))
+        }
+    }
+}
+
+private fun Modifier.afGlowRowBg(): Modifier =
+    this.afHud(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
