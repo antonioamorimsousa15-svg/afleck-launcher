@@ -19,6 +19,7 @@
 package com.shoyoomc.aflecklauncher.ui.screens.content.settings.layouts
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
@@ -366,7 +367,9 @@ fun SettingsCardColumn(
         LocalContentColor provides onCardColor()
     ) {
         Column(
-            modifier = modifier.afHud(AfCutShape(18.dp)),
+            modifier = modifier
+                .background(com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.26f), AfCutShape(18.dp))
+                .afHud(AfCutShape(18.dp)),
             verticalArrangement = Arrangement.spacedBy(0.dp),
             content = content
         )

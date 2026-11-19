@@ -108,7 +108,7 @@ fun SimpleAlertDialog(
 ) {
     AlertDialog(
         modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
-        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.5f),
         onDismissRequest = {
             if (dismissByDialog) onDismiss()
         },
@@ -159,7 +159,7 @@ fun SimpleAlertDialog(
 ) {
     AlertDialog(
         modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
-        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.5f),
         onDismissRequest = {
             if (dismissByDialog) onDismiss()
         },
@@ -199,7 +199,7 @@ fun SimpleAlertDialog(
 ) {
     AlertDialog(
         modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
-        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.5f),
         onDismissRequest = onDismissRequest,
         title = {
             Text(
@@ -246,7 +246,7 @@ fun SimpleAlertDialog(
 ) {
     AlertDialog(
         modifier = Modifier.afHud(MaterialTheme.shapes.extraLarge),
-        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.62f),
+        containerColor = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.5f),
         onDismissRequest = onDismiss,
         title = {
             Text(

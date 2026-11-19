@@ -21,6 +21,21 @@ package com.shoyoomc.aflecklauncher.ui.control.event
 import com.movtery.inputmap.keycodes.ControlEventKeycode
 import org.lwjgl.glfw.CallbackBridge
 
+/** Botão do mouse (esquerdo/direito) com suporte ao duplo clique do Afleck. */
+fun afMouseButton(keycode: Int, pressed: Boolean) {
+    if (AfDoubleClicker.isEligible(keycode)) AfDoubleClicker.handle(keycode, pressed)
+    else {
+        AfDoubleClicker.stop(keycode)
+        CallbackBridge.sendMouseButton(keycode, pressed)
+    }
+}
+
+/** Toque rápido: um clique normal ou, com o duplo clique ligado, dois cliques. */
+fun afMouseTap(keycode: Int) {
+    if (AfDoubleClicker.isEligible(keycode)) AfDoubleClicker.tap(keycode)
+    else CallbackBridge.putMouseEvent(keycode)
+}
+
 /**
  * 点击按键时，处理LWJGL按键事件
  */
@@ -32,14 +47,7 @@ fun lwjglEvent(
     val keycode: Int = ControlEventKeycode.getKeycodeFromEvent(eventKey)?.toInt() ?: return
 
     if (isMouse) {
-        val repeatable = keycode == com.movtery.inputmap.keycodes.LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt() ||
-            keycode == com.movtery.inputmap.keycodes.LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT.toInt()
-        if (repeatable && com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickOn) {
-            AfDoubleClicker.handle(keycode, isPressed)
-        } else {
-            AfDoubleClicker.stop(keycode)
-            CallbackBridge.sendMouseButton(keycode, isPressed)
-        }
+        afMouseButton(keycode, isPressed)
     } else {
         CallbackBridge.sendKeyPress(keycode, CallbackBridge.getCurrentMods(), isPressed)
         CallbackBridge.setModifiers(keycode, isPressed)
@@ -112,6 +120,25 @@ fun launcherEvent(
  * separados pelo intervalo escolhido (ms). O segundo clique fica apertado enquanto o dedo segurar.
  */
 object AfDoubleClicker {
+    fun isEligible(keycode: Int): Boolean =
+        com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickOn &&
+            (keycode == com.movtery.inputmap.keycodes.LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt() ||
+                keycode == com.movtery.inputmap.keycodes.LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT.toInt())
+
+    /** Toque: clique, pausa do intervalo e segundo clique (ambos soltos em seguida). */
+    fun tap(keycode: Int) {
+        stop(keycode)
+        val gap = com.shoyoomc.aflecklauncher.ui.screens.main.AfThemeState.dblClickRate.coerceIn(20, 200).toLong()
+        val short = (gap / 3).coerceAtLeast(10L)
+        CallbackBridge.sendMouseButton(keycode, true)
+        later(keycode, short) { CallbackBridge.sendMouseButton(keycode, false) }
+        later(keycode, gap) { CallbackBridge.sendMouseButton(keycode, true) }
+        later(keycode, gap + short) {
+            CallbackBridge.sendMouseButton(keycode, false)
+            pending[keycode]?.clear()
+        }
+    }
+
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val pending = HashMap<Int, MutableList<Runnable>>()
 

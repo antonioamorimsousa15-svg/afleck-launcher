@@ -770,7 +770,7 @@ fun GameScreen(
             closeScreen = { viewModel.gameMenuState = MenuState.HIDE },
             onForceClose = { viewModel.forceCloseState = ForceCloseOperation.Show },
             onSwitchLog = { onLogStateChange(logState.next()) },
-            enableTerracotta = AllSettings.enableTerracotta.state,
+            enableTerracotta = false, // Afleck: Multijogador removido do menu do jogo
             onOpenTerracottaMenu = { terracottaViewModel.openMenu() },
             onRefreshWindowSize = { eventViewModel.sendEvent(EventViewModel.Event.Game.RefreshSize) },
             onInputMethod = {
@@ -1049,27 +1049,28 @@ private fun MouseControlLayout(
             gamepadViewModel = gamepadViewModel,
             onTap = { position ->
                 val gamePosition = currentGameDisplayLayout(screenSize).mapToGame(position)
-                CallbackBridge.putMouseEventWithCoords(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt(), gamePosition.x, gamePosition.y)
+                CallbackBridge.sendCursorPos(gamePosition.x, gamePosition.y)
+                com.shoyoomc.aflecklauncher.ui.control.event.afMouseTap(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt())
             },
             onCapturedTap = {
                 if (AllSettings.gestureControl.state) {
-                    CallbackBridge.putMouseEvent(capturedTapMouseAction)
+                    com.shoyoomc.aflecklauncher.ui.control.event.afMouseTap(capturedTapMouseAction)
                 }
             },
             onLongPress = {
-                CallbackBridge.putMouseEvent(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt(), true)
+                com.shoyoomc.aflecklauncher.ui.control.event.afMouseButton(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt(), true)
             },
             onLongPressEnd = {
-                CallbackBridge.putMouseEvent(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt(), false)
+                com.shoyoomc.aflecklauncher.ui.control.event.afMouseButton(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt(), false)
             },
             onCapturedLongPress = {
                 if (AllSettings.gestureControl.state) {
-                    CallbackBridge.putMouseEvent(capturedLongPressMouseAction, true)
+                    com.shoyoomc.aflecklauncher.ui.control.event.afMouseButton(capturedLongPressMouseAction, true)
                 }
             },
             onCapturedLongPressEnd = {
                 if (AllSettings.gestureControl.state) {
-                    CallbackBridge.putMouseEvent(capturedLongPressMouseAction, false)
+                    com.shoyoomc.aflecklauncher.ui.control.event.afMouseButton(capturedLongPressMouseAction, false)
                 }
             },
             onPointerMove = { pos ->
