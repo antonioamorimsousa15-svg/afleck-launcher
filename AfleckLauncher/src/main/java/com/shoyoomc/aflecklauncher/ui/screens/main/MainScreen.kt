@@ -213,14 +213,47 @@ fun MainScreen(
                     )
                 }
             )
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             ) {
+            AfSidebar(
+                inHome = inLauncherScreen,
+                inVersions = mainScreenKey is NormalNavKey.VersionsManager,
+                inDownload = mainScreenKey is NestedNavKey.Download,
+                inAccounts = mainScreenKey is NormalNavKey.AccountManager,
+                inSettings = mainScreenKey is NestedNavKey.Settings && !showAppearance,
+                inAppearance = showAppearance,
+                onAppearance = { showAppearance = true },
+                modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+                onHome = { showAppearance = false; toMainScreen() },
+                onVersions = {
+                    showAppearance = false
+                    screenBackStackModel.mainScreen.removeAndNavigateTo(
+                        removes = screenBackStackModel.clearBeforeNavKeys,
+                        screenKey = NormalNavKey.VersionsManager
+                    )
+                },
+                onDownload = { showAppearance = false; screenBackStackModel.navigateToDownload() },
+                onAccounts = {
+                    showAppearance = false
+                    screenBackStackModel.mainScreen.removeAndNavigateTo(
+                        removes = screenBackStackModel.clearBeforeNavKeys,
+                        screenKey = NormalNavKey.AccountManager()
+                    )
+                },
+                onSettings = {
+                    showAppearance = false
+                    screenBackStackModel.mainScreen.removeAndNavigateTo(
+                        removes = screenBackStackModel.clearBeforeNavKeys,
+                        screenKey = screenBackStackModel.settingsScreen
+                    )
+                }
+            )
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxHeight()
                     .weight(1f)
             ) {
                 NavStateHost(rootKey = screenBackStackModel.mainScreen) {
@@ -250,39 +283,6 @@ fun MainScreen(
                     changeTasksExpandedState()
                 }
             }
-            AfSidebar(
-                inHome = inLauncherScreen,
-                inVersions = mainScreenKey is NormalNavKey.VersionsManager,
-                inDownload = mainScreenKey is NestedNavKey.Download,
-                inAccounts = mainScreenKey is NormalNavKey.AccountManager,
-                inSettings = mainScreenKey is NestedNavKey.Settings && !showAppearance,
-                inAppearance = showAppearance,
-                onAppearance = { showAppearance = true },
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                onHome = { showAppearance = false; toMainScreen() },
-                onVersions = {
-                    showAppearance = false
-                    screenBackStackModel.mainScreen.removeAndNavigateTo(
-                        removes = screenBackStackModel.clearBeforeNavKeys,
-                        screenKey = NormalNavKey.VersionsManager
-                    )
-                },
-                onDownload = { showAppearance = false; screenBackStackModel.navigateToDownload() },
-                onAccounts = {
-                    showAppearance = false
-                    screenBackStackModel.mainScreen.removeAndNavigateTo(
-                        removes = screenBackStackModel.clearBeforeNavKeys,
-                        screenKey = NormalNavKey.AccountManager()
-                    )
-                },
-                onSettings = {
-                    showAppearance = false
-                    screenBackStackModel.mainScreen.removeAndNavigateTo(
-                        removes = screenBackStackModel.clearBeforeNavKeys,
-                        screenKey = screenBackStackModel.settingsScreen
-                    )
-                }
-            )
             }
                 }
         }
