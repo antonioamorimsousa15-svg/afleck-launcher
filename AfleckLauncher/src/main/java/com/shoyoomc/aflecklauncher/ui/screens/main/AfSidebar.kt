@@ -50,11 +50,7 @@ fun AfSidebar(
     Box(
         modifier = modifier.width(205.dp).fillMaxHeight()
             .clip(panelShape)
-            .background(
-                androidx.compose.ui.graphics.Brush.verticalGradient(listOf(AfNavy.copy(alpha = 0.55f), AfNavy.copy(alpha = 0.78f))),
-                panelShape
-            )
-            .border(1.4.dp, AfBorder, panelShape)
+            .afGlassSurface(panelShape)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(10.dp).verticalScroll(rememberScrollState()),

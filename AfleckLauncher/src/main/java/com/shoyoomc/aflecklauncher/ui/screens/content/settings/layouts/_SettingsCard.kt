@@ -368,7 +368,7 @@ fun SettingsCardColumn(
     ) {
         Column(
             modifier = modifier
-                .background(com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.26f), AfCutShape(18.dp))
+                .background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.05f), AfCutShape(18.dp))
                 .afHud(AfCutShape(18.dp)),
             verticalArrangement = Arrangement.spacedBy(0.dp),
             content = content

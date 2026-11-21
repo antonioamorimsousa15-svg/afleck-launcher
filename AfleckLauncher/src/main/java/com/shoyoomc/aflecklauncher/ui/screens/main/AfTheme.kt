@@ -239,9 +239,9 @@ internal fun Modifier.afGlassSurface(shape: androidx.compose.ui.graphics.Shape, 
         else
             Brush.verticalGradient(
                 listOf(
-                    Color.White.copy(alpha = (0.20f * k).coerceAtMost(0.6f)),
-                    Color.White.copy(alpha = (0.06f * k).coerceAtMost(0.4f)),
-                    base.copy(alpha = (0.28f * k).coerceAtMost(0.8f))
+                    Color.White.copy(alpha = (0.16f * k).coerceAtMost(0.5f)),
+                    Color.White.copy(alpha = (0.04f * k).coerceAtMost(0.25f)),
+                    accent.copy(alpha = (0.07f * k).coerceAtMost(0.22f))
                 )
             )
     }
@@ -333,7 +333,7 @@ internal fun AfIconCircle(icon: Int, size: Dp = 40.dp, filled: Boolean = false, 
         modifier = modifier.size(size)
             .afGlow(CircleShape, if (filled) AfAccent else AfBorder, if (filled) 1.2f else 0.7f)
             .clip(CircleShape)
-            .background(if (filled) AfAccent.copy(alpha = 0.16f) else AfNavy.copy(alpha = 0.5f)),
+            .background(if (filled) AfAccent.copy(alpha = 0.16f) else Color.White.copy(alpha = 0.10f)),
         contentAlignment = Alignment.Center
     ) {
         Icon(painterResource(icon), null, tint = if (filled) AfAccent else AfText, modifier = Modifier.size(size * 0.5f))

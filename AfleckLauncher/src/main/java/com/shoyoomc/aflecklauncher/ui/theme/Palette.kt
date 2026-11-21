@@ -42,7 +42,7 @@ fun onBackgroundColor(): Color = MaterialTheme.colorScheme.onSurfaceVariant
 @Composable
 fun cardColor(
     influencedByBackground: Boolean = true
-): Color = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.26f)
+): Color = com.shoyoomc.aflecklauncher.ui.screens.main.androidx.compose.ui.graphics.Color.White.copy(alpha = 0.07f)
 @Composable
 fun onCardColor(): Color = MaterialTheme.colorScheme.onSurface
 /**
@@ -61,6 +61,6 @@ fun cardTitleColor(
 fun itemColor(
     influencedByBackground: Boolean = true,
     isDark: Boolean = isLauncherInDarkTheme()
-): Color = com.shoyoomc.aflecklauncher.ui.screens.main.AfNavy.copy(alpha = 0.2f)
+): Color = com.shoyoomc.aflecklauncher.ui.screens.main.androidx.compose.ui.graphics.Color.White.copy(alpha = 0.06f)
 @Composable
 fun onItemColor() = MaterialTheme.colorScheme.onSurface
